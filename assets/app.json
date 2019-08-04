@@ -1,0 +1,166 @@
+{
+  "app_id": 1246,
+  "state": "active",
+  "title": "PagSeguro",
+  "slug": "pagseguro",
+  "version": "0.1.0",
+  "type": "external",
+  "authentication": true,
+  "auth_callback_uri": "https://pagseguro.ecomplus.biz/ecom/auth-callback",
+  "auth_scope": {
+    "orders": [
+      "GET",
+      "POST"
+    ],
+    "orders/payments_history": [
+      "GET",
+      "POST",
+      "PATCH"
+    ],
+    "procedures": [
+      "POST"
+    ]
+  },
+  "modules": {
+    "list_payments": {
+      "endpoint": "https://pagseguro.ecomplus.biz/ecom/modules/list-payments",
+      "enabled": true
+    },
+    "create_transaction": {
+      "endpoint": "https://pagseguro.ecomplus.biz/ecom/modules/create-transaction",
+      "enabled": true
+    }
+  },
+  "admin_settings": {
+    "payment_options": {
+      "schema": {
+        "type": "array",
+        "title": "Formas de Pagamento Wirecard",
+        "items": {
+          "type": "object",
+          "title": "Configura\u00e7\u00f5es",
+          "required": [
+            "name",
+            "type",
+            "payment_type",
+            "installments",
+            "intermediator",
+            "icon",
+            "url"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "R\u00f3tulo do pagamento",
+              "maxLength": 200,
+              "description": "Escreva o nome da forma de pagamento que aparecer\u00e1 no checkout para seus clientes. Por exemplo: Cart\u00e3o de Cr\u00e9dito"
+            },
+            "type": {
+              "type": "string",
+              "title": "Tipo de pagmento",
+              "description": "Informe o tipo de pagamento, ou seja, se \u00e9 do tipo cart\u00e3o de cr\u00e9dito, digite credit_card. Se for boleto, escreva banking_billet. Se for debito online, escreva online_debit"
+            },
+            "payment_type": {
+              "type": "string",
+              "title": "Modelo de pagamento",
+              "default": "payment",
+              "description": "Digite o modelo de pagamento, ou seja, se \u00e9 recurrence (assinatura) ou payment (pagamentos)"
+            },
+            "installments": {
+              "type": "array",
+              "title": "Parcelamento",
+              "items": {
+                "type": "object",
+                "title": "The Items Schema",
+                "required": [
+                  "number",
+                  "tax",
+                  "tax_value"
+                ],
+                "properties": {
+                  "number": {
+                    "type": "integer",
+                    "title": "Quantidade de parcelas",
+                    "default": 0,
+                    "description": "Digite a quantidade de parcelas da forma de pagamento"
+                  },
+                  "tax": {
+                    "type": "boolean",
+                    "title": "Deseja utilizar taxa ?",
+                    "default": false,
+                    "description": "Marque como sim para utilizar taxas, ou n\u00e3o"
+                  },
+                  "tax_value": {
+                    "type": "integer",
+                    "title": "Valor da taxa",
+                    "default": 0,
+                    "description": "Insira o valor da taxa do parcelamento"
+                  }
+                }
+              }
+            },
+            "intermediator": {
+              "type": "object",
+              "title": "Intermediador",
+              "required": [
+                "code",
+                "link",
+                "name"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "title": "Slug do intermediador"
+                },
+                "link": {
+                  "type": "string",
+                  "title": "Link do Intermediador",
+                  "format": "uri",
+                  "description": "Digite o link da p\u00e1gina inicial do intermediador de pagamento. Exemplo: https:\/\/www.wirecard.com.br"
+                },
+                "name": {
+                  "type:": "string",
+                  "title": "Nome do intermediador",
+                  "description": "Escreva o nome do intermediador que esteja utilizando. Exemplo: wirecard"
+                }
+              }
+            },
+            "icon": {
+              "type": "string",
+              "title": "\u00cdcone do intermediador",
+              "format": "uri",
+              "description": "Insira a URL do \u00edcone ou a imagem que ir\u00e1 representar a forma de pagamento no checkout. Sugere-se inserir o logotipo do intermediador de pagamento"
+            },
+            "url": {
+              "type": "string",
+              "title": "URL da Forma de Pagamento",
+              "description": "URL da forma de pagamento. Exemplo: https:\/\/www.wiredcard.com.br\/payment",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "hide": true
+    },
+    "sort": {
+      "schema": {
+        "type": "array",
+        "title": "Modalidades de Pagamento",
+        "items": {
+          "type": "string",
+          "title": "Ordem de Pagamento",
+          "description": "Defina a ordem das modalidades de pagamento que ir\u00e3o aparecer no checkout. Exemplo: online_debit, credit_card, banking_billet"
+        }
+      },
+      "hide": true
+    },
+    "statement_descriptor": {
+      "schema": {
+        "type": "string",
+        "title": "Nome da Loja",
+        "description": "Escreva o nome da sua loja. Exemplo: Loja Teste"
+      },
+      "hide": true
+    }
+  }
+}
