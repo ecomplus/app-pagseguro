@@ -1,7 +1,7 @@
 'use strict'
 const logger = require('console-files')
 const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
-const { getPagSeguroAuth } = require('./../../../lib/database')
+const { getPagSeguroAuth, saveTransaction } = require('./../../../lib/database')
 module.exports = () => {
   return (req, res) => {
     const { params } = req.body
@@ -37,6 +37,10 @@ module.exports = () => {
         // process checkout body
         // and pay
         ps.pay.new().then(({ payload, schema }) => {
+          // save transaction code
+          saveTransaction(payload.transaction.code, payload.transaction.status, storeId)
+          // status code
+          res.status(201)
           // response
           res.send(schema)
         })
@@ -45,7 +49,7 @@ module.exports = () => {
             logger.error('CREATE_TRANSACTION_ERR', error)
             return res.status(500).send({
               error: 'CREATE_TRANSACTION_ERR',
-              message: error.response.data
+              message: error
             })
           })
       })
