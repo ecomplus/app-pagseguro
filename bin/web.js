@@ -63,6 +63,8 @@ ecomAuth.then(appSdk => {
     router.get(route, require(`${routes}${route}`)(appSdk))
   })
 
+  router.post('/pagseguro/webhook', require(`${routes}/pagseguro/webhook`)(appSdk))
+
   // add router and start web server
   app.use(router)
   app.listen(port)
