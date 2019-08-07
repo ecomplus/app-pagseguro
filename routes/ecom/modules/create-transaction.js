@@ -6,7 +6,7 @@ module.exports = () => {
   return (req, res) => {
     const { params } = req.body
     const storeId = req.storeId
-
+    logger.log(JSON.stringify(params))
     getPagSeguroAuth(storeId)
 
       .then(auth => {
@@ -49,7 +49,7 @@ module.exports = () => {
             logger.error('CREATE_TRANSACTION_ERR', error)
             return res.status(500).send({
               error: 'CREATE_TRANSACTION_ERR',
-              message: error
+              message: error.response.data
             })
           })
       })
