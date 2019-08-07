@@ -116,17 +116,19 @@ const listPaymentOptions = {
   },
   installment_options: (config, params) => {
     if (config.hasOwnProperty('installments')) {
-      let installments = config.installments.map(installment => {
-        let installmentValue = params.amount.total / installment.number
-        let taxValue = installment.tax_value / 100
-        let installmentFinalValue = installment.tax ? (installmentValue * taxValue + installmentValue) : installmentValue
+      let installments = config.installments
+        .filter(installment => installment.number > 1)
+        .map(installment => {
+          let installmentValue = params.amount.total / installment.number
+          let taxValue = installment.tax_value / 100
+          let installmentFinalValue = installment.tax ? (installmentValue * taxValue + installmentValue) : installmentValue
 
-        return {
-          number: installment.number,
-          tax: installment.tax,
-          value: Math.abs(installmentFinalValue)
-        }
-      })
+          return {
+            number: installment.number,
+            tax: installment.tax,
+            value: Math.abs(installmentFinalValue)
+          }
+        })
 
       return installments
     }
