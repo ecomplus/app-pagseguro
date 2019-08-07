@@ -36,7 +36,7 @@ module.exports = () => {
 
         // process checkout body
         // and pay
-        ps.pay.new().then(({ payload, schema }) => {
+        return ps.pay.new().then(({ payload, schema }) => {
           // save transaction code
           saveTransaction(payload.transaction.code, payload.transaction.status, storeId)
           // status code
@@ -44,19 +44,14 @@ module.exports = () => {
           // response
           res.send(schema)
         })
-
-          .catch(error => {
-            logger.error('CREATE_TRANSACTION_ERR', error)
-            return res.status(400).send({
-              error: 'CREATE_TRANSACTION_ERR',
-              message: error.response.data
-            })
-          })
       })
 
       .catch(error => {
-        logger.error('create_transaction error:', error)
-        return res.status(400).send({ error: error.message })
+        logger.error('CREATE_TRANSACTION_ERR:', error)
+        return res.status(400).send({
+          error: 'CREATE_TRANSACTION_ERR',
+          message: error
+        })
       })
   }
 }
