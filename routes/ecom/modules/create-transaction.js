@@ -39,8 +39,6 @@ module.exports = () => {
         return ps.pay.new().then(({ payload, schema }) => {
           // save transaction code
           saveTransaction(payload.transaction.code, payload.transaction.status, storeId)
-          // status code
-          res.status(201)
           // response
           return res.send(schema)
         })
