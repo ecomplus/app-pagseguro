@@ -47,7 +47,7 @@ module.exports = () => {
 
           .catch(error => {
             logger.error('CREATE_TRANSACTION_ERR', error)
-            return res.status(500).send({
+            return res.status(400).send({
               error: 'CREATE_TRANSACTION_ERR',
               message: error.response.data
             })
