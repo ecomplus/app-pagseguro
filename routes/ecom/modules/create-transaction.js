@@ -42,7 +42,7 @@ module.exports = () => {
           // status code
           res.status(201)
           // response
-          res.send(schema)
+          return res.send(schema)
         })
       })
 
