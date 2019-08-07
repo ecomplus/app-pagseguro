@@ -24,25 +24,14 @@ module.exports = () => {
         return result.data
       })
       .then(data => {
-        try {
-          const auth = JSON.parse(xmlToJson.toJson(data))
-          save(
-            auth.authorization.code,
-            auth.authorization.authorizerEmail,
-            auth.authorization.reference,
-            auth.authorization.account.publicKey,
-            JSON.stringify(auth.authorization.permissions))
-            .then(() => {
-              res.status(200)
-              res.write('<script>window.close()</script>')
-              return res.end()
-            })
-        } catch (error) {
-          logger.error('Pagseguro oauth callback erro:', error)
-          throw error
-        }
+        const auth = JSON.parse(xmlToJson.toJson(data))
+        save(auth.authorization.code, auth.authorization.authorizerEmail, auth.authorization.reference, auth.authorization.account.publicKey, JSON.stringify(auth.authorization.permissions))
+        res.status(200)
+        res.write('<script>window.close()</script>')
+        return res.end()
       })
       .catch(e => {
+        logger.error('PAGSEGURO_AUTH_CALLBACK_ERR:', e)
         res.status(400)
         res.write(`
           <div>
