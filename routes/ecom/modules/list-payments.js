@@ -160,7 +160,17 @@ const listPaymentOptions = {
   js_client: (config, sessionId) => {
     if (config.type === 'credit_card') {
       let sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
-      let onloadFunction = `window.pagseguroHash=function(a){return PagSeguroDirectPayment.setSessionId("${sessionId}"),new Promise(function(b,c){var d=function(a){return"error"!==a.status||(c(new Error(a.message)),!1)};PagSeguroDirectPayment.onSenderHashReady(function(c){if(d(c)){var e=c.senderHash;console.log("PagSeguroDirectPayment->hash: "+e),PagSeguroDirectPayment.getBrand({cardBin:parseInt(a.number.replace(/\D/g,"").substr(0,6),10),complete:function(c){if(d(c)){var f=c.brand.name;console.log("PagSeguroDirectPayment->brand: "+f),PagSeguroDirectPayment.createCardToken({cardNumber:a.number.replace(/\D/g,""),brand:f,cvv:a.cvc,expirationMonth:a.month,expirationYear:2<a.year.length?a.year:"20"+a.year,complete:function(a){if(d(a)){var c=e+" // "+a.card.token;b(c)}}})}}})}})})};`
+      let onloadFunction = `window.pagseguroHash=function(card){PagSeguroDirectPayment.setSessionId(${sessionId})
+      return new Promise(function(resolve,reject){var checkResponse=function(response){console.log(response)
+      if(response.status==='error'){reject(new Error(response.message))
+      return!1}
+      return!0}
+      PagSeguroDirectPayment.onSenderHashReady(function(response){if(checkResponse(response)){var hash=response.senderHash
+      console.log('PagSeguroDirectPayment->hash: '+hash)
+      PagSeguroDirectPayment.getBrand({cardBin:parseInt(card.number.replace(/\D/g,'').substr(0,6),10),complete:function(response){if(checkResponse(response)){var brand=response.brand.name
+      console.log('PagSeguroDirectPayment->brand: '+brand)
+      PagSeguroDirectPayment.createCardToken({cardNumber:card.number.replace(/\D/g,''),brand:brand,cvv:card.cvc,expirationMonth:card.month,expirationYear:card.year.length>2?card.year:'20'+card.year,complete:function(response){if(checkResponse(response)){var token=hash+' // '+response.card.token
+      resolve(token)}}})}}})}})})}`
       return {
         cc_brand: {
           function: 'pagseguroBrand',
