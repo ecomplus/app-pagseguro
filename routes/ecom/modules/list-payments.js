@@ -160,7 +160,96 @@ const listPaymentOptions = {
   js_client: (config, sessionId) => {
     if (config.type === 'credit_card') {
       let sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
-      let onloadFunction = `window.pagseguroBrand=function(a){return new Promise(function(b,c){PagSeguroDirectPayment.setSessionId("${sessionId}"),PagSeguroDirectPayment.getBrand({cardBin:a.number.substring(0,6),success:function(a){console.log("Brand do cartao",a),b(a.brand)},error:function(a){c(new Error(a))}})})},window.pagseguroHash=function(a){return PagSeguroDirectPayment.setSessionId("${sessionId}"),new Promise(function(b,c){console.log("Credicard Data",a),PagSeguroDirectPayment.getBrand({cardBin:a.number.replace(/\s/g,"").substring(0,6),success:function(d){console.log("Brand",d);let e={cardNumber:a.number,brand:d.brand.name,cvv:a.cvc,expirationMonth:a.month,expirationYear:a.year,success:function(a){b(a)},error:function(a){c(new Error(a))}};console.log("Card",e),PagSeguroDirectPayment.createCardToken(e)},error:function(a){c(new Error(a))}})})};`
+      let onloadFunction = `
+
+      window.pagseguroHash = function (card) {
+      
+        PagSeguroDirectPayment.setSessionId('${sessionId}')
+      
+      ​
+      
+        return new Promise(function (resolve, reject) {
+      
+          var checkResponse = function (response) {
+      
+            if (response.status == 'error') {
+      
+              reject(new Error(response.message))
+      
+              return false
+      
+            }
+      
+            return true
+      
+          }
+      
+      ​
+      
+          PagSeguroDirectPayment.onSenderHashReady(function (response) {
+      
+            if (checkResponse(response)) {
+      
+              var hash = response.senderHash
+      
+              console.log('PagSeguroDirectPayment->hash: ' + hash)
+      
+      ​
+      
+              PagSeguroDirectPayment.getBrand({
+      
+                cardBin: parseInt(card.number.replace(/\D/g, '').substr(0, 6), 10),
+      
+                complete: function (response) {
+      
+                  if (checkResponse(response)) {
+      
+                    var brand = response.brand.name
+      
+                    console.log('PagSeguroDirectPayment->brand: ' + brand)
+      
+      ​
+      
+                    PagSeguroDirectPayment.createCardToken({
+      
+                      cardNumber: card.number.replace(/\D/g, ''),
+      
+                      brand: brand,
+      
+                      cvv: card.cvc,
+      
+                      expirationMonth: card.month,
+      
+                      expirationYear: card.year.length > 2 ? card.year : '20' + card.year,
+      
+                      complete: function (response) {
+      
+                        if (checkResponse(response)) {
+      
+                          var token = hash + ' // ' + response.card.token
+      
+                          resolve(token)
+      
+                        }
+      
+                      }
+      
+                    })
+      
+                  }
+      
+                }
+      
+              })
+      
+            }
+      
+          })
+      
+        })
+      
+      }
+      `
       return {
         cc_brand: {
           function: 'pagseguroBrand',
