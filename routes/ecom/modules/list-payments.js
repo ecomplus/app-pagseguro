@@ -160,7 +160,7 @@ const listPaymentOptions = {
   js_client: (config, sessionId) => {
     if (config.type === 'credit_card') {
       let sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
-      let onloadFunction = `window.pagseguroBrand=function(a){return new Promise(function(b){PagSeguroDirectPayment.setSessionId(${sessionId}),PagSeguroDirectPayment.getBrand({cardBin:a.number.substring(0,6),success:function(a){b(a.brand)}})})},window.pagseguroHash=function(a){return new Promise(function(b){PagSeguroDirectPayment.createCardToken({cardNumber:a.number,brand:a.name,cvv:a.cvv,expirationMonth:a.month,expirationYear:a.year,success:function(a){b(a)}})})};`
+      let onloadFunction = `window.pagseguroBrand=function(a){return new Promise(function(b){PagSeguroDirectPayment.setSessionId('${sessionId}'),PagSeguroDirectPayment.getBrand({cardBin:a.number.substring(0,6),success:function(a){b(a.brand)}})})},window.pagseguroHash=function(a){return new Promise(function(b){PagSeguroDirectPayment.createCardToken({cardNumber:a.number,brand:a.name,cvv:a.cvv,expirationMonth:a.month,expirationYear:a.year,success:function(a){b(a)}})})};`
       return {
         cc_brand: {
           function: 'pagseguroBrand',
