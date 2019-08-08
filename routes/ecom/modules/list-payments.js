@@ -160,7 +160,7 @@ const listPaymentOptions = {
   js_client: (config, sessionId) => {
     if (config.type === 'credit_card') {
       let sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
-      let onloadFunction = `window.pagseguroHash=function(card){PagSeguroDirectPayment.setSessionId(${sessionId})
+      let onloadFunction = `window.pagseguroHash=function(card){PagSeguroDirectPayment.setSessionId("${sessionId}" )
       return new Promise(function(resolve,reject){var checkResponse=function(response){console.log(response)
       if(response.status==='error'){reject(new Error(response.message))
       return!1}
