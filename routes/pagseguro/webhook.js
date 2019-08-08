@@ -7,7 +7,7 @@ const ECHO_API_ERROR = 'STORE_API_ERR'
 
 module.exports = (appSdk) => {
   return (req, res) => {
-    const { notificationCode, notificationType } = req.query
+    const { notificationCode, notificationType } = req.body
     switch (notificationType) {
       case 'applicationAuthorization':
         break
