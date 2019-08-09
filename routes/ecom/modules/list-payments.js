@@ -12,12 +12,13 @@ module.exports = (appSdk) => {
           appKey: process.env.PS_APP_KEY,
           authorizationCode: auth.authorization_code
         })
+
         // card session
         pg.session.new()
-          .then(session => {
+          .then(async session => {
             // parse params from body
             const { params, application } = req.body
-
+            const installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
             // load application default config
             let { payment_options, sort } = require('./../../../lib/payment-default')
 
@@ -56,20 +57,20 @@ module.exports = (appSdk) => {
 
             // create payment option list for list_payment
             // with merged configuration
-            configMerged.forEach(config => {
+            configMerged.forEach(async config => {
               let paymentGateways = {}
               paymentGateways.discount = listPaymentOptions.discount(config)
               paymentGateways.icon = listPaymentOptions.icon(config)
               paymentGateways.installments = listPaymentOptions.intermediator(config)
-              paymentGateways.installment_options = listPaymentOptions.installment_options(config, params)
               paymentGateways.label = listPaymentOptions.label(config)
               paymentGateways.payment_method = listPaymentOptions.payment_method(config)
               paymentGateways.payment_url = listPaymentOptions.payment_url(config)
               paymentGateways.type = listPaymentOptions.type(config)
               if ((config.type === 'credit_card')) {
                 paymentGateways.js_client = listPaymentOptions.js_client(config, session)
+                paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
               }
-
+              console.log(paymentGateways.installment_options)
               payload.payment_gateways.push(paymentGateways)
             })
 
@@ -117,7 +118,7 @@ module.exports = (appSdk) => {
 
 const listPaymentOptions = {
   discount: (config) => {
-    if (config.hasOwnProperty('discount')) {
+    if (config.hasOwnProperty('discount') && config.discount.value > 0) {
       return {
         type: config.discount.type,
         value: config.discount.value
@@ -129,24 +130,20 @@ const listPaymentOptions = {
       return config.icon
     }
   },
-  installment_options: (config, params) => {
-    if (config.hasOwnProperty('installments')) {
-      let installments = config.installments
-        .filter(installment => installment.number > 1)
-        .map(installment => {
-          let installmentValue = params.amount.total / installment.number
-          let taxValue = installment.tax_value / 100
-          let installmentFinalValue = installment.tax ? (installmentValue * taxValue + installmentValue) : installmentValue
-
-          return {
-            number: installment.number,
-            tax: installment.tax,
-            value: Math.abs(installmentFinalValue)
-          }
-        })
-
-      return installments
-    }
+  installment_options: (options) => {
+    let installments = []
+    installments = options
+      .installments
+      .visa
+      .filter(installment => installment.quantity > 1)
+      .map(installment => {
+        return {
+          number: installment.quantity,
+          tax: (!installment.interestFree),
+          value: Math.abs(installment.installmentAmount)
+        }
+      })
+    return installments
   },
   intermediator: (config) => {
     if (config.hasOwnProperty('intermediator')) {
@@ -159,59 +156,8 @@ const listPaymentOptions = {
   },
   js_client: (config, session) => {
     if (config.type === 'credit_card') {
-      const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
-      const onloadFunction = `
-      (function () {
-        window.pagseguroBrand = function () {
-          return null;
-        };
-      
-        window.pagseguroHash = function (card) {
-          PagSeguroDirectPayment.setSessionId('${session}');
-      
-          return new Promise(function (resolve, reject) {
-            var checkResponse = function (response) {
-              if (response.status === 'error' || response.error === true) {
-                reject(new Error(response.message));
-                console.log(response);
-                return false;
-              }
-              return true;
-            }
-      
-            PagSeguroDirectPayment.onSenderHashReady(function (response) {
-              if (checkResponse(response)) {
-                var hash = response.senderHash;
-                console.log('PagSeguroDirectPayment->hash: ' + hash);
-      
-                PagSeguroDirectPayment.getBrand({
-                  cardBin: parseInt(card.number.replace(/\D/g, '').substr(0, 6), 10),
-                  complete: function (response) {
-                    if (checkResponse(response)) {
-                      var brand = response.brand.name;
-                      console.log('PagSeguroDirectPayment->brand: ' + brand);
-      
-                      PagSeguroDirectPayment.createCardToken({
-                        cardNumber: card.number.replace(/\D/g, ''),
-                        brand: brand,
-                        cvv: card.cvc,
-                        expirationMonth: card.month,
-                        expirationYear: card.year.length > 2 ? card.year : '20' + card.year,
-                        complete: function (response) {
-                          if (checkResponse(response)) {
-                            var token = hash + ' // ' + response.card.token;
-                            resolve(token);
-                          }
-                        }
-                      });
-                    }
-                  }
-                });
-              }
-            });
-          });
-        }
-      }());`
+      const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
+      const onloadFunction = `window.pagseguroSessionId="${session}";`
       return {
         cc_brand: {
           function: 'pagseguroBrand',
@@ -221,9 +167,9 @@ const listPaymentOptions = {
           function: 'pagseguroHash',
           is_promise: true
         },
-        fallback_script_uri: `https://stc.${sandbox}pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js`,
+        fallback_script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
         onload_expression: onloadFunction,
-        script_uri: `https://stc.${sandbox}pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js`
+        script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
       }
     }
   },
