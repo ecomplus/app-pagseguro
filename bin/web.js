@@ -14,7 +14,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const router = express.Router()
 const port = process.env.PORT || 3000
-
+app.use(express.static('assets'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
