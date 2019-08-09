@@ -9,7 +9,7 @@ module.exports = () => {
     logger.log(JSON.stringify(params))
     getPagSeguroAuth(storeId)
 
-      .then(auth => {
+      .then(async auth => {
         // pagseguro client
         const ps = new PagSeguro({
           appId: process.env.PS_APP_ID,
@@ -23,7 +23,7 @@ module.exports = () => {
         // choice payment method
         switch (params.payment_method.code) {
           case 'credit_card':
-            ps.checkout.card()
+            await ps.checkout.card()
             break
           case 'banking_billet':
             ps.checkout.bankingBillet()
