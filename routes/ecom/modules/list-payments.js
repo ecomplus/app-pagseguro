@@ -160,7 +160,58 @@ const listPaymentOptions = {
   js_client: (config, session) => {
     if (config.type === 'credit_card') {
       const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
-      const onloadFunction = `(function(){window.pagseguroBrand=function(){return null},window.pagseguroHash=function(e){return PagSeguroDirectPayment.setSessionId("${session}"),new Promise(function(r,n){var a=function(e){return"error"!==e.status&&!0!==e.error||(n(new Error(e.message)),!1)};PagSeguroDirectPayment.onSenderHashReady(function(n){if(a(n)){var o=n.senderHash;console.log("PagSeguroDirectPayment->hash: "+o),PagSeguroDirectPayment.getBrand({cardBin:parseInt(e.number.replace(/\D/g,"").substr(0,6),10),complete:function(n){if(a(n)){var t=n.brand.name;console.log("PagSeguroDirectPayment->brand: "+t),PagSeguroDirectPayment.createCardToken({cardNumber:e.number.replace(/\D/g,""),brand:t,cvv:e.cvc,expirationMonth:e.month,expirationYear:e.year.length>2?e.year:"20"+e.year,complete:function(e){if(a(e)){var n=o+" // "+e.card.token;r(n)}}})}}})}})})};}());`
+      const onloadFunction = `
+      (function () {
+        window.pagseguroBrand = function () {
+          return null;
+        };
+      
+        window.pagseguroHash = function (card) {
+          PagSeguroDirectPayment.setSessionId('${session}');
+      
+          return new Promise(function (resolve, reject) {
+            var checkResponse = function (response) {
+              if (response.status === 'error' || response.error === true) {
+                reject(new Error(response.message));
+                console.log(response);
+                return false;
+              }
+              return true;
+            }
+      
+            PagSeguroDirectPayment.onSenderHashReady(function (response) {
+              if (checkResponse(response)) {
+                var hash = response.senderHash;
+                console.log('PagSeguroDirectPayment->hash: ' + hash);
+      
+                PagSeguroDirectPayment.getBrand({
+                  cardBin: parseInt(card.number.replace(/\D/g, '').substr(0, 6), 10),
+                  complete: function (response) {
+                    if (checkResponse(response)) {
+                      var brand = response.brand.name;
+                      console.log('PagSeguroDirectPayment->brand: ' + brand);
+      
+                      PagSeguroDirectPayment.createCardToken({
+                        cardNumber: card.number.replace(/\D/g, ''),
+                        brand: brand,
+                        cvv: card.cvc,
+                        expirationMonth: card.month,
+                        expirationYear: card.year.length > 2 ? card.year : '20' + card.year,
+                        complete: function (response) {
+                          if (checkResponse(response)) {
+                            var token = hash + ' // ' + response.card.token;
+                            resolve(token);
+                          }
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+            });
+          });
+        }
+      }());`
       return {
         cc_brand: {
           function: 'pagseguroBrand',
