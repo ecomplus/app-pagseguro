@@ -5,6 +5,7 @@ const logger = require('console-files')
 
 module.exports = (appSdk) => {
   return (req, res) => {
+    logger.log(JSON.stringify(req.body))
     getPagSeguroAuth(req.storeId)
 
       .then(auth => {
@@ -21,7 +22,7 @@ module.exports = (appSdk) => {
           .then(async session => {
             // parse params from body
             const { params, application } = req.body
-            logger.log(req.body)
+
             const installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
             // load application default config
             let { payment_options, sort } = require('./../../../lib/payment-default')
@@ -118,7 +119,7 @@ module.exports = (appSdk) => {
       })
 
       .catch(error => {
-        logger.log('LIST_PAYMENTS_ERR', error)
+        logger.error('LIST_PAYMENTS_ERR', error)
         res.status(400)
         return res.send({
           error: 'LIST_PAYMENTS_ERR',
