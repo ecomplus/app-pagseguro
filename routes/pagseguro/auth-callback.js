@@ -26,8 +26,12 @@ module.exports = () => {
       .then(data => {
         const auth = JSON.parse(xmlToJson.toJson(data))
         save(auth.authorization.code, auth.authorization.authorizerEmail, auth.authorization.reference, auth.authorization.account.publicKey, JSON.stringify(auth.authorization.permissions))
-        res.status(200)
-        res.write('<script>window.close()</script>')
+        res.write(`
+          <script>
+            window.open("", "_self");
+            window.close();
+          </script>
+        `)
         return res.end()
       })
       .catch(e => {
