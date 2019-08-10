@@ -20,6 +20,7 @@ module.exports = (appSdk) => {
         pg.session.new()
 
           .then(async session => {
+
             // parse params from body
             const { params, application } = req.body
 
@@ -112,9 +113,17 @@ module.exports = (appSdk) => {
 
             const sortFunc = (a, b) => sort.indexOf(a.payment_method.code) - sort.indexOf(b.payment_method.code)
             payload.payment_gateways.sort(sortFunc)
-
+            logger.log(payload)
             // response
             return res.send(payload)
+          })
+          .catch(error => {
+            logger.error('LIST_PAYMENTS_ERR', error)
+            res.status(400)
+            return res.send({
+              error: 'LIST_PAYMENTS_ERR',
+              message: 'Unexpected Error Try Later'
+            })
           })
       })
 
