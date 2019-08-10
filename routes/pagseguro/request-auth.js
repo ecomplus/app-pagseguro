@@ -29,7 +29,7 @@ module.exports = () => {
           ]
         },
         redirectURL: process.env.PS_APP_REDIRECT_URI,
-        notificationURL: 'https://echo-requests.herokuapp.com/' // process.env.PS_APP_NOTIFICATION_URL
+        notificationURL: process.env.PS_APP_NOTIFICATION_URL
       }
     }
     let xml = '<?xml version="1.0" encoding="iso-8859-1" standalone="yes"?>'
@@ -56,7 +56,8 @@ module.exports = () => {
           let authorizations = JSON.parse(xmlToJson.toJson(data))
           console.log(authorizations)
           let { code } = authorizations.authorizationRequest
-          let redirectTo = `https://sandbox.pagseguro.uol.com.br/v2/authorization/request.jhtml?code=${code}`
+          let env = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'sandbox.' : ''
+          let redirectTo = `https://${env}pagseguro.uol.com.br/v2/authorization/request.jhtml?code=${code}`
           return res.redirect(redirectTo)
         } catch (error) {
           throw error
