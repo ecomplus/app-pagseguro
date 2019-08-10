@@ -1,10 +1,12 @@
 'use strict'
 const { getPagSeguroAuth } = require('./../../../lib/database')
 const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
+const logger = require('console-files')
 
 module.exports = (appSdk) => {
   return (req, res) => {
     getPagSeguroAuth(req.storeId)
+
       .then(auth => {
         // pagseguro client
         const pg = new PagSeguro({
@@ -15,9 +17,11 @@ module.exports = (appSdk) => {
 
         // card session
         pg.session.new()
+
           .then(async session => {
             // parse params from body
             const { params, application } = req.body
+            logger.log(req.body)
             const installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
             // load application default config
             let { payment_options, sort } = require('./../../../lib/payment-default')
@@ -70,7 +74,6 @@ module.exports = (appSdk) => {
                 paymentGateways.js_client = listPaymentOptions.js_client(config, session)
                 paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
               }
-              console.log(paymentGateways.installment_options)
               payload.payment_gateways.push(paymentGateways)
             })
 
@@ -112,6 +115,15 @@ module.exports = (appSdk) => {
             // response
             return res.send(payload)
           })
+      })
+
+      .catch(error => {
+        logger.log('LIST_PAYMENTS_ERR', error)
+        res.status(400)
+        return res.send({
+          error: 'LIST_PAYMENTS_ERR',
+          message: 'Unexpected Error Try Later'
+        })
       })
   }
 }
