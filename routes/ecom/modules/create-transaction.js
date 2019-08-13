@@ -48,7 +48,7 @@ module.exports = () => {
         logger.error('CREATE_TRANSACTION_ERR:', error)
         return res.status(400).send({
           error: 'CREATE_TRANSACTION_ERR',
-          message: error
+          message: 'Unexpected Error Try Later'
         })
       })
   }
