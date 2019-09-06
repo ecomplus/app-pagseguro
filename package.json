@@ -1,9 +1,12 @@
 {
-  "name": "my-app",
+  "name": "pagseguro",
   "private": true,
   "version": "0.0.1",
-  "description": "My awesome E-Com Plus app",
+  "description": "Pagseguro for E-Com Plus",
   "main": "main.js",
+  "scripts": {
+    "start": "ECOM_AUTH_DB=/var/dbs/pagseguro.sqlite LOGGER_OUTPUT=/var/log/nodejs/pagseguro.out LOGGER_ERRORS=/var/log/nodejs/pagseguro.error nodemon main.js"
+  },
   "dependencies": {
     "axios": "^0.19.0",
     "console-files": "^2.3.1",
