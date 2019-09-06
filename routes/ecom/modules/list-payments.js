@@ -5,7 +5,7 @@ const logger = require('console-files')
 
 module.exports = (appSdk) => {
   return (req, res) => {
-    logger.log(JSON.stringify(req.body))
+
     getPagSeguroAuth(req.storeId)
 
       .then(auth => {
@@ -17,14 +17,13 @@ module.exports = (appSdk) => {
         })
 
         // card session
-        pg.session.new()
+        return pg.session.new()
 
           .then(async session => {
 
             // parse params from body
             const { params, application } = req.body
 
-            const installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
             // load application default config
             let { payment_options, sort } = require('./../../../lib/payment-default')
 
@@ -61,50 +60,48 @@ module.exports = (appSdk) => {
               }
             })
 
-            // create payment option list for list_payment
-            // with merged configuration
-            configMerged.forEach(async config => {
-              let paymentGateways = {}
-              paymentGateways.discount = listPaymentOptions.discount(config)
-              paymentGateways.icon = listPaymentOptions.icon(config)
-              paymentGateways.installments = listPaymentOptions.intermediator(config)
-              paymentGateways.label = listPaymentOptions.label(config)
-              paymentGateways.payment_method = listPaymentOptions.payment_method(config)
-              paymentGateways.payment_url = listPaymentOptions.payment_url(config)
-              paymentGateways.type = listPaymentOptions.type(config)
-              if ((config.type === 'credit_card')) {
-                paymentGateways.js_client = listPaymentOptions.js_client(config, session)
-                paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
-              }
-              payload.payment_gateways.push(paymentGateways)
-            })
-
-            // interest_free_installments
-            configMerged.forEach(config => {
-              if (config.hasOwnProperty('installments')) {
-                // sort array
-                config.installments.sort((a, b) => (a.number > b.number) ? 1 : ((b.number > a.number) ? -1 : 0))
-
-                config.installments.filter(installment => {
-                  if (installment.tax === false && installment.number > 1) {
-                    payload.interest_free_installments = installment.number
-                  }
-                })
-              }
-            })
-
-            // discount_options
-            configMerged.forEach(config => {
-              if (config.type === 'banking_billet' && config.hasOwnProperty('discount')) {
-                if (config.discount.value > 0) {
-                  payload.discount_options = {
-                    label: config.name,
-                    type: config.discount.type,
-                    value: config.discount.value
-                  }
+            if (params && params.hasOwnProperty('items') && params.hasOwnProperty('amount')) {
+              const installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
+              // create payment option list for list_payment
+              // with merged configuration
+              configMerged.forEach(async config => {
+                let paymentGateways = {}
+                paymentGateways.discount = listPaymentOptions.discount(config)
+                paymentGateways.icon = listPaymentOptions.icon(config)
+                paymentGateways.intermediator = listPaymentOptions.intermediator(config)
+                paymentGateways.label = listPaymentOptions.label(config)
+                paymentGateways.payment_method = listPaymentOptions.payment_method(config)
+                paymentGateways.payment_url = listPaymentOptions.payment_url(config)
+                paymentGateways.type = listPaymentOptions.type(config)
+                if ((config.type === 'credit_card')) {
+                  paymentGateways.js_client = listPaymentOptions.js_client(config, session)
+                  paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
+                  paymentGateways.card_companies = config.card_companies
                 }
+                payload.payment_gateways.push(paymentGateways)
+              })
+            }
+
+            // discount_option
+            if (application.hasOwnProperty('hidden_data') && application.hidden_data.hasOwnProperty('discount_option')) {
+              const discountOption = application.hidden_data.discount_option || {}
+              payload.discount_option = {
+                min_amount: discountOption.min_amount,
+                label: discountOption.label,
+                type: discountOption.type,
+                value: discountOption.value
               }
-            })
+            }
+
+            // installments_option
+            if (application.hasOwnProperty('hidden_data') && application.hidden_data.hasOwnProperty('installments_option')) {
+              const installmentOptions = application.hidden_data.installments_option || {}
+              payload.installments_option = {
+                min_installment: installmentOptions.min_installment,
+                max_number: installmentOptions.max_number,
+                monthly_interest: installmentOptions.monthly_interest
+              }
+            }
 
             // sort config
             if (application.hasOwnProperty('hidden_data') && application.hidden_data.hasOwnProperty('sort')) {
@@ -113,22 +110,13 @@ module.exports = (appSdk) => {
 
             const sortFunc = (a, b) => sort.indexOf(a.payment_method.code) - sort.indexOf(b.payment_method.code)
             payload.payment_gateways.sort(sortFunc)
-            logger.log(payload)
             // response
             return res.send(payload)
-          })
-          .catch(error => {
-            logger.error('LIST_PAYMENTS_ERR', error)
-            res.status(400)
-            return res.send({
-              error: 'LIST_PAYMENTS_ERR',
-              message: 'Unexpected Error Try Later'
-            })
           })
       })
 
       .catch(error => {
-        logger.error('LIST_PAYMENTS_ERR', error)
+        logger.error('LIST_PAYMENTS_ERR', error.message)
         res.status(400)
         return res.send({
           error: 'LIST_PAYMENTS_ERR',
