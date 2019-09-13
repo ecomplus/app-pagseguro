@@ -12,7 +12,7 @@ module.exports = (appSdk) => {
       case 'applicationAuthorization':
         break
       case 'transaction':
-        require('./../../lib/pagseguro/pagseguro-transactions')(appSdk)(notificationCode)
+        require('./../../lib/pagseguro/pagseguro-transactions')(appSdk, notificationCode)
         break
       default:
         break
