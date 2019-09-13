@@ -6,7 +6,7 @@ module.exports = () => {
   return (req, res) => {
     const { params } = req.body
     const storeId = req.storeId
-    logger.log(JSON.stringify(params))
+
     getPagSeguroAuth(storeId)
 
       .then(async auth => {

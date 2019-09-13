@@ -1,9 +1,6 @@
 
 'use strict'
-const SKIP_TRIGGER_NAME = 'SkipTrigger'
 const ECHO_SUCCESS = 'SUCCESS'
-const ECHO_SKIP = 'SKIP'
-const ECHO_API_ERROR = 'STORE_API_ERR'
 
 module.exports = (appSdk) => {
   return (req, res) => {
