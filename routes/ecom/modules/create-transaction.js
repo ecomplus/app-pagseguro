@@ -44,8 +44,10 @@ module.exports = () => {
         })
       })
 
-      .catch(error => {
-        logger.error('CREATE_TRANSACTION_ERR:', error)
+      .catch(() => {
+        if (params && params.is_checkout_confirmation === true) {
+          logger.error(`Erro trying to create transaction for order ${params.order_number} | Store #${storeId}`)
+        }
         return res.status(400).send({
           error: 'CREATE_TRANSACTION_ERR',
           message: 'Unexpected Error Try Later'
