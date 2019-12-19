@@ -4,7 +4,6 @@ const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
 const { getPagSeguroAuth, saveTransaction } = require('./../../../lib/database')
 module.exports = () => {
   return (req, res) => {
-    logger.log(JSON.stringify(req.body))
     const { params } = req.body
     const storeId = req.storeId
     getPagSeguroAuth(storeId)
@@ -44,10 +43,8 @@ module.exports = () => {
         })
       })
 
-      .catch(() => {
-        if (params && params.is_checkout_confirmation === true) {
-          logger.error(`Erro trying to create transaction for order ${params.order_number} | Store #${storeId}`)
-        }
+      .catch((e) => {
+        logger.error(`Erro trying to create transaction for order ${params.order_number} | Store #${storeId}`)
         return res.status(400).send({
           error: 'CREATE_TRANSACTION_ERR',
           message: 'Unexpected Error Try Later'
