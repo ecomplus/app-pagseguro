@@ -4,9 +4,9 @@ const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
 const { getPagSeguroAuth, saveTransaction } = require('./../../../lib/database')
 module.exports = () => {
   return (req, res) => {
+    logger.log(JSON.stringify(req.body))
     const { params } = req.body
     const storeId = req.storeId
-
     getPagSeguroAuth(storeId)
 
       .then(async auth => {
