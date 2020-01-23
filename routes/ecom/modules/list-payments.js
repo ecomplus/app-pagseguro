@@ -72,8 +72,8 @@ module.exports = (appSdk) => {
               paymentGateways.payment_method = listPaymentOptions.payment_method(config)
               paymentGateways.payment_url = listPaymentOptions.payment_url(config)
               paymentGateways.type = listPaymentOptions.type(config)
+              paymentGateways.js_client = listPaymentOptions.js_client(config, session)
               if ((config.type === 'credit_card')) {
-                paymentGateways.js_client = listPaymentOptions.js_client(config, session)
                 paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
                 paymentGateways.card_companies = config.card_companies
               }
@@ -159,23 +159,26 @@ const listPaymentOptions = {
     }
   },
   js_client: (config, session) => {
+    const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
+    const onloadFunction = `window.pagseguroSessionId="${session}";`
+    const js = {
+      fallback_script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
+      onload_expression: onloadFunction,
+      script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
+      transaction_promise: '_senderHash'
+    }
+
     if (config.type === 'credit_card') {
-      const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
-      const onloadFunction = `window.pagseguroSessionId="${session}";`
-      return {
-        cc_brand: {
-          function: 'pagseguroBrand',
-          is_promise: true
-        },
-        cc_hash: {
-          function: 'pagseguroHash',
-          is_promise: true
-        },
-        fallback_script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
-        onload_expression: onloadFunction,
-        script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
+      js.cc_brand = {
+        function: 'pagseguroBrand',
+        is_promise: true
+      }
+      js.cc_hash = {
+        function: 'pagseguroHash',
+        is_promise: true
       }
     }
+    return js
   },
   label: (config) => {
     if (config.hasOwnProperty('name')) {
