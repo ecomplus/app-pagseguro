@@ -164,8 +164,7 @@ const listPaymentOptions = {
     const js = {
       fallback_script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
       onload_expression: onloadFunction,
-      script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
-      transaction_promise: '_senderHash'
+      script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
     }
 
     if (config.type === 'credit_card') {
@@ -177,6 +176,8 @@ const listPaymentOptions = {
         function: 'pagseguroHash',
         is_promise: true
       }
+    } else {
+      js.transaction_promise = '_senderHash'
     }
     return js
   },
