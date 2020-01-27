@@ -4,8 +4,7 @@
   PagSeguroDirectPayment.setSessionId(window.pagseguroSessionId);
 
   var checkResponse = function (response) {
-    if (response.status === 'error' || response.error === true) {
-      reject(new Error(response.message));
+    if ((response && response.status && response.status === 'error') || (response.error && response.error === true)) {
       return false;
     }
     return true;
