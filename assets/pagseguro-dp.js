@@ -47,9 +47,8 @@
           PagSeguroDirectPayment.getBrand({
             cardBin: parseInt(card.number.replace(/\D/g, '').substr(0, 6), 10),
             complete: function (response) {
-              if (checkResponse(response)) {
-                var brand = response.brand.name;
-
+              if (checkResponse(response) || getBrand(card.number.replace(/\D/g, ''))) {
+                var brand = response.brand && response.brand.name ? response.brand.name : getBrand(card.number.replace(/\D/g, ''))
                 PagSeguroDirectPayment.createCardToken({
                   cardNumber: card.number.replace(/\D/g, ''),
                   brand: brand,
@@ -60,14 +59,41 @@
                     if (checkResponse(response)) {
                       var token = hash + ' // ' + response.card.token;
                       resolve(token);
+                    } else {
+                      reject(response)
                     }
                   }
                 });
+              } else {
+                reject(response)
               }
             }
           });
+        } else {
+          reject(response)
         }
       });
     });
+  }
+
+  const getBrand = card => {
+    let name = false
+    const brands = {
+      Amex: /^3[47][0-9]{13}/,
+      Diners: /^3(?:0[0-5]|[68][0-9])[0-9]{11}/,
+      Discover: /^6(?:011|5[0-9]{2})[0-9]{12}/,
+      Elo: /^((((636368)|(438935)|(504175)|(451416)|(636297))\d{0,10})|((5067)|(4576)|(4011))\d{0,12})/,
+      Hipercard: /^(606282\d{10}(\d{3})?)|(3841\d{15})/,
+      JCB: /^(?:2131|1800|35\d{3})\d{11}/,
+      Mastercard: /^5[1-5][0-9]{14}/,
+      Visa: /^4[0-9]{12}(?:[0-9]{3})/
+    }
+
+    for (const brand in brands) {
+      if (card.match(brands[brand])) {
+        name = brand
+      }
+    }
+    return name
   }
 }());
