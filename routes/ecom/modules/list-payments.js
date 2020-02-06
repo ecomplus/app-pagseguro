@@ -1,6 +1,7 @@
 'use strict'
 const { getPagSeguroAuth } = require('./../../../lib/database')
 const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
+const logger = require('console-files')
 
 module.exports = (appSdk) => {
   return (req, res) => getPagSeguroAuth(req.storeId)
@@ -114,10 +115,21 @@ module.exports = (appSdk) => {
         })
     })
 
-    .catch(() => res.status(400).send({
-      error: 'LIST_PAYMENTS_ERR',
-      message: 'Unexpected Error Try Later'
-    }))
+    .catch(error => {
+      let message
+      // axios
+      if (error && error.response) {
+        message = error.response.data
+      } else {
+        // throw
+        message = error.message
+      }
+      logger.error(`Listpayment Error | Store #${req.storeId} | Error ${message}`)
+      res.status(400).send({
+        error: 'LIST_PAYMENTS_ERR',
+        message: 'Unexpected Error Try Later'
+      })
+    })
 }
 
 const listPaymentOptions = {
@@ -162,7 +174,7 @@ const listPaymentOptions = {
     const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
     const onloadFunction = `window.pagseguroSessionId="${session}";`
     const js = {
-      fallback_script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`,
+      fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
       onload_expression: onloadFunction,
       script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
     }

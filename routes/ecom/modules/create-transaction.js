@@ -43,8 +43,17 @@ module.exports = () => {
         })
       })
 
-      .catch((e) => {
-        logger.error(`Erro trying to create transaction for order ${params.order_number} | Store #${storeId}`)
+      .catch(error => {
+        let message
+        // axios
+        if (error && error.response) {
+          message = error.response.data
+        } else {
+          // throw
+          message = error.message
+        }
+
+        logger.error(`Erro trying to create transaction for order ${params.order_number} | Store #${storeId} | Error ${message}`)
         return res.status(400).send({
           error: 'CREATE_TRANSACTION_ERR',
           message: 'Unexpected Error Try Later'
