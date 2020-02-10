@@ -71,7 +71,7 @@ module.exports = (appSdk) => {
             paymentGateways.payment_url = listPaymentOptions.payment_url(config)
             paymentGateways.type = listPaymentOptions.type(config)
             if (session) {
-              paymentGateways.js_client = listPaymentOptions.js_client(config, session)
+              paymentGateways.js_client = listPaymentOptions.js_client(config, session, installmentOptions)
               if ((config.type === 'credit_card')) {
                 if (installmentOptions) {
                   paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
@@ -166,17 +166,19 @@ const listPaymentOptions = {
   },
   installment_options: (options) => {
     let installments = []
-    installments = options
-      .installments
-      .visa
-      .filter(installment => installment.quantity > 1)
-      .map(installment => {
-        return {
-          number: installment.quantity,
-          tax: (!installment.interestFree),
-          value: Math.abs(installment.installmentAmount)
-        }
-      })
+    if (options && options.installments && options.installments.visa) {
+      installments = options
+        .installments
+        .visa
+        .filter(installment => installment.quantity > 1)
+        .map(installment => {
+          return {
+            number: installment.quantity,
+            tax: (!installment.interestFree),
+            value: Math.abs(installment.installmentAmount)
+          }
+        })
+    }
     return installments
   },
   intermediator: (config) => {
@@ -188,9 +190,15 @@ const listPaymentOptions = {
       }
     }
   },
-  js_client: (config, session) => {
+  js_client: (config, session, installmentOptions) => {
     const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
-    const onloadFunction = `window.pagseguroSessionId="${session}";`
+    let onloadFunction = `window.pagseguroSessionId="${session}";`
+    if (installmentOptions && installmentOptions.installments) {
+      const installmentsJson = JSON.stringify(installmentOptions.installments.visa)
+      if (installmentsJson.length > 50 && installmentsJson.length <= 1500) {
+        onloadFunction += `window.pagseguroInstallments=${installmentsJson};`
+      }
+    }
     const js = {
       fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
       onload_expression: onloadFunction,
