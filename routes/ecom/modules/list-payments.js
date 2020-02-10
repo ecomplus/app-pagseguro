@@ -121,14 +121,16 @@ module.exports = (appSdk) => {
       } else {
         // card session
         pg.session.new()
-          .then(session => {
-            return pg.installments.getInstallments(session, params.amount.total)
-              .then(installmentOptions => {
-                sendPaymentGateways({ session, installmentOptions })
-              })
-              .catch(() => {
-                sendPaymentGateways({ session })
-              })
+          .then(async session => {
+            let installmentOptions
+            if (params.amount && params.amount.total) {
+              try {
+                installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
+              } catch (e) {
+                // ignore
+              }
+            }
+            sendPaymentGateways({ session, installmentOptions })
           })
           .catch(err => {
             logger.error(err)
