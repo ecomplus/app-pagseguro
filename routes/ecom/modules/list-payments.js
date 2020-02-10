@@ -17,7 +17,7 @@ module.exports = (appSdk) => {
       // parse params from body
       const { params, application } = req.body
 
-      const sendPaymentGateways = session => {
+      const sendPaymentGateways = ({ session, installmentOptions }) => {
         // app settings
         const getConfig = Object.assign({}, application.hidden_data)
         // load application default config
@@ -59,35 +59,28 @@ module.exports = (appSdk) => {
         const { items, amount } = params
 
         if (items && amount) {
-          let installmentOptions
           // create payment option list for list_payment
           // with merged configuration
-          ;(async function () {
-            for (let i = 0; i < configMerged.length; i++) {
-              const config = configMerged[i]
-              const paymentGateways = {}
-              paymentGateways.discount = listPaymentOptions.discount(config)
-              paymentGateways.icon = listPaymentOptions.icon(config)
-              paymentGateways.intermediator = listPaymentOptions.intermediator(config)
-              paymentGateways.label = listPaymentOptions.label(config)
-              paymentGateways.payment_method = listPaymentOptions.payment_method(config)
-              paymentGateways.payment_url = listPaymentOptions.payment_url(config)
-              paymentGateways.type = listPaymentOptions.type(config)
-              if (session) {
-                paymentGateways.js_client = listPaymentOptions.js_client(config, session)
-                if ((config.type === 'credit_card')) {
-                  if (installmentOptions === undefined) {
-                    installmentOptions = await pg.installments.getInstallments(session, amount.total)
-                  }
-                  if (installmentOptions) {
-                    paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
-                  }
-                  paymentGateways.card_companies = config.card_companies
+          configMerged.forEach(config => {
+            const paymentGateways = {}
+            paymentGateways.discount = listPaymentOptions.discount(config)
+            paymentGateways.icon = listPaymentOptions.icon(config)
+            paymentGateways.intermediator = listPaymentOptions.intermediator(config)
+            paymentGateways.label = listPaymentOptions.label(config)
+            paymentGateways.payment_method = listPaymentOptions.payment_method(config)
+            paymentGateways.payment_url = listPaymentOptions.payment_url(config)
+            paymentGateways.type = listPaymentOptions.type(config)
+            if (session) {
+              paymentGateways.js_client = listPaymentOptions.js_client(config, session)
+              if ((config.type === 'credit_card')) {
+                if (installmentOptions) {
+                  paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
                 }
+                paymentGateways.card_companies = config.card_companies
               }
-              payload.payment_gateways.push(paymentGateways)
             }
-          }())
+            payload.payment_gateways.push(paymentGateways)
+          })
         }
 
         // discount_option
@@ -103,11 +96,11 @@ module.exports = (appSdk) => {
 
         // installments_option
         if (getConfig && getConfig.installments_option) {
-          const installmentOptions = getConfig.installments_option || {}
+          const installmentOption = getConfig.installments_option || {}
           payload.installments_option = {
-            min_installment: installmentOptions.min_installment,
-            max_number: installmentOptions.max_number,
-            monthly_interest: installmentOptions.monthly_interest
+            min_installment: installmentOption.min_installment,
+            max_number: installmentOption.max_number,
+            monthly_interest: installmentOption.monthly_interest
           }
         }
 
@@ -124,11 +117,19 @@ module.exports = (appSdk) => {
 
       if (params.is_checkout_confirmation) {
         logger.log(`Checkout #${req.storeId}`)
-        sendPaymentGateways(null)
+        sendPaymentGateways({})
       } else {
         // card session
         pg.session.new()
-          .then(sendPaymentGateways)
+          .then(session => {
+            return pg.installments.getInstallments(session, params.amount.total)
+              .then(installmentOptions => {
+                sendPaymentGateways({ session, installmentOptions })
+              })
+              .catch(() => {
+                sendPaymentGateways({ session })
+              })
+          })
           .catch(err => {
             logger.error(err)
             res.status(400).send({
