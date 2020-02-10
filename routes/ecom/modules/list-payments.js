@@ -18,9 +18,12 @@ module.exports = (appSdk) => {
       const { params, application } = req.body
 
       // card session
-      return params.is_checkout_confirmation ? Promise.resolve() : pg.session.new()
+      return params.is_checkout_confirmation ? Promise.resolve(null) : pg.session.new()
 
         .then(async session => {
+          if (params.is_checkout_confirmation) {
+            logger.log(`Checkout #${req.storeId}`)
+          }
           // app settings
           const getConfig = Object.assign({}, application.hidden_data)
           // load application default config
