@@ -14,12 +14,13 @@ module.exports = (appSdk) => {
         authorizationCode: auth.authorization_code
       })
 
+      // parse params from body
+      const { params, application } = req.body
+
       // card session
-      return pg.session.new()
+      return params.is_checkout_confirmation ? Promise.resolve() : pg.session.new()
 
         .then(async session => {
-          // parse params from body
-          const { params, application } = req.body
           // app settings
           const getConfig = Object.assign({}, application.hidden_data)
           // load application default config
@@ -61,10 +62,11 @@ module.exports = (appSdk) => {
           const { items, amount } = params
 
           if (items && amount) {
-            const installmentOptions = await pg.installments.getInstallments(session, amount.total)
+            let installmentOptions
             // create payment option list for list_payment
             // with merged configuration
-            configMerged.forEach(async config => {
+            for (let i = 0; i < configMerged.length; i++) {
+              const config = configMerged[i]
               const paymentGateways = {}
               paymentGateways.discount = listPaymentOptions.discount(config)
               paymentGateways.icon = listPaymentOptions.icon(config)
@@ -73,13 +75,20 @@ module.exports = (appSdk) => {
               paymentGateways.payment_method = listPaymentOptions.payment_method(config)
               paymentGateways.payment_url = listPaymentOptions.payment_url(config)
               paymentGateways.type = listPaymentOptions.type(config)
-              paymentGateways.js_client = listPaymentOptions.js_client(config, session)
-              if ((config.type === 'credit_card')) {
-                paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
-                paymentGateways.card_companies = config.card_companies
+              if (session) {
+                paymentGateways.js_client = listPaymentOptions.js_client(config, session)
+                if ((config.type === 'credit_card')) {
+                  if (installmentOptions === undefined) {
+                    installmentOptions = await pg.installments.getInstallments(session, amount.total)
+                  }
+                  if (installmentOptions) {
+                    paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
+                  }
+                  paymentGateways.card_companies = config.card_companies
+                }
               }
               payload.payment_gateways.push(paymentGateways)
-            })
+            }
           }
 
           // discount_option
@@ -116,14 +125,6 @@ module.exports = (appSdk) => {
     })
 
     .catch(error => {
-      let message
-      // axios
-      if (error && error.response) {
-        message = error.response.data
-      } else {
-        // throw
-        message = error.message
-      }
       logger.error(error)
       res.status(400).send({
         error: 'LIST_PAYMENTS_ERR',
