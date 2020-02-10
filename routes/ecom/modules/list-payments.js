@@ -124,7 +124,7 @@ module.exports = (appSdk) => {
         // throw
         message = error.message
       }
-      logger.error(`Listpayment Error | Store #${req.storeId} | Error ${message}`)
+      logger.error(error)
       res.status(400).send({
         error: 'LIST_PAYMENTS_ERR',
         message: 'Unexpected Error Try Later'
