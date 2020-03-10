@@ -1,7 +1,9 @@
 'use strict'
+
 const logger = require('console-files')
 const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
 const { getPagSeguroAuth, saveTransaction } = require('./../../../lib/database')
+
 module.exports = () => {
   return (req, res) => {
     const { params } = req.body
@@ -43,20 +45,30 @@ module.exports = () => {
         })
       })
 
-      .catch(error => {
-        let message
-        // axios
-        if (error && error.response) {
-          message = error.response.data
-        } else {
-          // throw
-          message = error.message
+      .catch(err => {
+        if (err.response) {
+          const { status } = err.response
+          // treat some PagSeguro response status
+          if (status >= 500) {
+            return res.status(403).send({
+              error: 'CREATE_TRANSACTION_PS_ERR',
+              message: 'PagSeguro seems to be offline, try again later'
+            })
+          } else if (status === 401) {
+            return res.status(401).send({
+              error: 'TRANSACTION_PS_AUTH_ERR',
+              message: 'PagSeguro authentication error, please try another playment method'
+            })
+          }
         }
 
-        logger.error(`Erro trying to create transaction for order ${params.order_number} | Store #${storeId} | Error ${message}`)
+        // debug axios request error stack
+        err.storeId = storeId
+        err.orderNumber = params.order_number
+        logger.error(err)
         return res.status(400).send({
           error: 'CREATE_TRANSACTION_ERR',
-          message: 'Unexpected Error Try Later'
+          message: 'Unexpected error, try again later'
         })
       })
   }
