@@ -8,8 +8,9 @@ module.exports = () => {
   return (req, res) => {
     const { params } = req.body
     const storeId = req.storeId
+    logger.log(`Transaction #${storeId} ${params.order_number}`)
+    
     getPagSeguroAuth(storeId)
-
       .then(async auth => {
         // pagseguro client
         const ps = new PagSeguro({
@@ -48,6 +49,7 @@ module.exports = () => {
       .catch(err => {
         if (err.response) {
           const { status } = err.response
+          logger.log(`PagSeguro ${status} response for #${storeId} ${params.order_number}`)
           // treat some PagSeguro response status
           if (status >= 500) {
             return res.status(403).send({
