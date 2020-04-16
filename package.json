@@ -5,7 +5,8 @@
   "description": "Pagseguro for E-Com Plus",
   "main": "main.js",
   "scripts": {
-    "start": "ECOM_AUTH_DB=/var/dbs/pagseguro.sqlite LOGGER_OUTPUT=/var/log/nodejs/pagseguro.out LOGGER_ERRORS=/var/log/nodejs/pagseguro.error nodemon main.js"
+    "start": "ECOM_AUTH_DB=/var/dbs/pagseguro.sqlite LOGGER_OUTPUT=/var/log/nodejs/pagseguro.out LOGGER_ERRORS=/var/log/nodejs/pagseguro.error nodemon main.js",
+    "release": "standard-version"
   },
   "dependencies": {
     "axios": "^0.19.0",
@@ -19,6 +20,8 @@
   "devDependencies": {
     "@commitlint/cli": "^8.1.0",
     "@commitlint/config-conventional": "^8.1.0",
-    "standard": "*"
+    "husky": "^4.2.5",
+    "standard": "*",
+    "standard-version": "^7.1.0"
   }
 }
