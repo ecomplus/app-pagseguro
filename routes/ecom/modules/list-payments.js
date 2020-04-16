@@ -55,7 +55,7 @@ module.exports = appSdk => {
         }
 
         // credit_card
-        if (!config.credit_card || !config.credit_card.enabled) {
+        if (!config.credit_card || !config.credit_card.disabled) {
           const creditCard = {
             ...newPaymentGateway(),
             payment_method: {
