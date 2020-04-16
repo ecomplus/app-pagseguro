@@ -58,6 +58,12 @@
                   complete: function (response) {
                     if (checkResponse(response)) {
                       var token = hash + ' // ' + response.card.token;
+                      if (Array.isArray(window.pagseguroInstallments)) {
+                        var installmentsJson = JSON.stringify(window.pagseguroInstallments)
+                        if (installmentsJson.length <= 1500) {
+                          token += ' // ' + installmentsJson;
+                        }
+                      }
                       resolve(token);
                     } else {
                       reject(response)
