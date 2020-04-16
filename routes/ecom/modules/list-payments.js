@@ -77,7 +77,7 @@ module.exports = appSdk => {
               onload_expression: onloadFunction,
               script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
             },
-            icon: 'http://e-com.club/mass/ftp/others/pagseguro_credito.png',
+            icon: 'https://e-com.club/mass/ftp/others/pagseguro_credito.png',
             card_companies: config.card_companies
           }
 
@@ -143,7 +143,7 @@ module.exports = appSdk => {
               name: 'Débito Online'
             },
             label: 'Débito Online',
-            icon: 'http://e-com.club/mass/ftp/others/pagseguro_debito.png',
+            icon: 'https://e-com.club/mass/ftp/others/pagseguro_debito.png',
             js_client: {
               transaction_promise: '_senderHash',
               fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
