@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.41](https://github.com/ecomclub/app-pagseguro/compare/v0.5.40...v0.5.41) (2020-04-16)
+
+
+### Bug Fixes
+
+* **list-payments:** disabled credit_card ([35513f6](https://github.com/ecomclub/app-pagseguro/commit/35513f6c36c7c2f9c1edd06824bfbe80805c51f8))
+
 ### 0.5.40 (2020-04-16)
 
 
