@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.42](https://github.com/ecomclub/app-pagseguro/compare/v0.5.41...v0.5.42) (2020-04-16)
+
+
+### Bug Fixes
+
+* **list-payments:** url secure for icons ([43e9050](https://github.com/ecomclub/app-pagseguro/commit/43e905074c8cf58f514ae8564e0c0610547e7961))
+
 ### [0.5.41](https://github.com/ecomclub/app-pagseguro/compare/v0.5.40...v0.5.41) (2020-04-16)
 
 
