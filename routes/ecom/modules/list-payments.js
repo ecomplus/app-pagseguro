@@ -3,232 +3,211 @@ const { getPagSeguroAuth } = require('./../../../lib/database')
 const PagSeguro = require('./../../../lib/pagseguro/pagseguro-client')
 const logger = require('console-files')
 
-module.exports = (appSdk) => {
-  return (req, res) => {
-    let retry = 0
-    const request = () => getPagSeguroAuth(req.storeId)
+module.exports = appSdk => {
+  return (req, res) => getPagSeguroAuth(req.storeId)
+    .then(auth => {
+      // pagseguro client
+      const pg = new PagSeguro({
+        appId: process.env.PS_APP_ID,
+        appKey: process.env.PS_APP_KEY,
+        authorizationCode: auth.authorization_code
+      })
 
-      .then(auth => {
-        // pagseguro client
-        const pg = new PagSeguro({
-          appId: process.env.PS_APP_ID,
-          appKey: process.env.PS_APP_KEY,
-          authorizationCode: auth.authorization_code
-        })
+      // parse params from body
+      const { params, application } = req.body
 
-        // card session
-        return pg.session.new()
+      const sendPaymentGateways = ({ session, installmentOptions }) => {
+        // app settings
+        const config = Object.assign(application.data, application.hidden_data)
 
-          .then(async session => {
-            // parse params from body
-            const { params, application } = req.body
-            // app settings
-            const getConfig = Object.assign({}, application.hidden_data)
-            // load application default config
-            let { payment_options, sort } = require('./../../../lib/payment-default')
+        // empty response
+        const response = {
+          payment_gateways: []
+        }
 
-            // array to merge config
-            const configMerged = []
-
-            // empty payload
-            const payload = {
-              payment_gateways: []
+        // calculate discount value
+        const { discount } = config
+        if (discount && discount.value > 0) {
+          if (discount.apply_at !== 'freight') {
+            // default discount option
+            const { value } = discount
+            response.discount_option = {
+              label: config.discount_option_label,
+              value
             }
-
-            // merge application default config with
-            // configuration sent at application.hidden_data
-            payment_options.forEach(defaultOption => {
-              // if the application not has payments config setted up, uses default.
-              if (!getConfig || !getConfig.payment_options) {
-                configMerged.push(defaultOption)
-              } else {
-                // Checks if default payment option is set in application.hidden_data
-                const applicationConfiguration = getConfig.payment_options.find(applicationOption => applicationOption.type === defaultOption.type)
-
-                if (applicationConfiguration) {
-                  // check if payment options is enabled to list at list_payments
-                  if (applicationConfiguration.enabled === true) {
-                    configMerged.push({
-                      ...defaultOption,
-                      ...applicationConfiguration
-                    })
-                  }
-                } else {
-                  // uses payment_option default if option is not setted up at application.hidden_data.payment_options
-                  configMerged.push(defaultOption)
-                }
+            // specify the discount type and min amount is optional
+            ;['type', 'min_amount'].forEach(prop => {
+              if (discount[prop]) {
+                response.discount_option[prop] = discount[prop]
               }
             })
+          }
+        }
 
-            const { items, amount } = params
 
-            if (items && amount) {
-              const installmentOptions = await pg.installments.getInstallments(session, amount.total)
-              // create payment option list for list_payment
-              // with merged configuration
-              configMerged.forEach(async config => {
-                const paymentGateways = {}
-                paymentGateways.discount = listPaymentOptions.discount(config)
-                paymentGateways.icon = listPaymentOptions.icon(config)
-                paymentGateways.intermediator = listPaymentOptions.intermediator(config)
-                paymentGateways.label = listPaymentOptions.label(config)
-                paymentGateways.payment_method = listPaymentOptions.payment_method(config)
-                paymentGateways.payment_url = listPaymentOptions.payment_url(config)
-                paymentGateways.type = listPaymentOptions.type(config)
-                paymentGateways.js_client = listPaymentOptions.js_client(config, session)
-                if ((config.type === 'credit_card')) {
-                  paymentGateways.installment_options = listPaymentOptions.installment_options(installmentOptions)
-                  paymentGateways.card_companies = config.card_companies
+        const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
+        let onloadFunction = `window.pagseguroSessionId="${session}";`
+        if (installmentOptions && installmentOptions.installments) {
+          const installmentsJson = JSON.stringify(installmentOptions.installments.visa)
+          if (installmentsJson.length > 50 && installmentsJson.length <= 1500) {
+            onloadFunction += `window.pagseguroInstallments=${installmentsJson};`
+          }
+        }
+
+        // credit_card
+        if (!config.credit_card || !config.credit_card.enabled) {
+          const creditCard = {
+            ...newPaymentGateway(),
+            payment_method: {
+              code: 'credit_card',
+              name: 'Cartão de crédito - pagseguro'
+            },
+            label: 'Cartão de crédito',
+            installment_options: [],
+            js_client: {
+              cc_brand: {
+                function: 'pagseguroBrand',
+                is_promise: true
+              },
+              cc_hash: {
+                function: 'pagseguroHash',
+                is_promise: true
+              },
+              fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
+              onload_expression: onloadFunction,
+              script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
+            },
+            icon: 'http://e-com.club/mass/ftp/others/pagseguro_credito.png',
+            card_companies: config.card_companies
+          }
+
+          if (installmentOptions && installmentOptions.installments && installmentOptions.installments.visa) {
+            const { visa } = installmentOptions.installments
+
+            creditCard.installment_options = visa
+              .filter(installment => installment.quantity > 1)
+              .map(installment => {
+                return {
+                  number: installment.quantity,
+                  tax: (!installment.interestFree),
+                  value: Math.abs(installment.installmentAmount)
                 }
-                payload.payment_gateways.push(paymentGateways)
               })
+
+            //response.installments_option
+            const installmentsOption = visa.find(option => option.interestFree === false)
+            response.installments_option = {
+              min_installment: installmentsOption.quantity,
+              max_number: visa.length,
+              monthly_interest: 0
             }
+          }
 
-            // discount_option
-            if (getConfig && getConfig.discount_option) {
-              const discountOption = getConfig.discount_option || {}
-              payload.discount_option = {
-                min_amount: discountOption.min_amount,
-                label: discountOption.label,
-                type: discountOption.type,
-                value: discountOption.value
-              }
-            }
-
-            // installments_option
-            if (getConfig && getConfig.installments_option) {
-              const installmentOptions = getConfig.installments_option || {}
-              payload.installments_option = {
-                min_installment: installmentOptions.min_installment,
-                max_number: installmentOptions.max_number,
-                monthly_interest: installmentOptions.monthly_interest
-              }
-            }
-
-            // sort config
-            if (getConfig && getConfig.sort) {
-              sort = [...getConfig.sort, ...sort]
-            }
-
-            const sortFunc = (a, b) => sort.indexOf(a.payment_method.code) - sort.indexOf(b.payment_method.code)
-            payload.payment_gateways.sort(sortFunc)
-            // response
-            return res.send(payload)
-          })
-      })
-
-      .catch(error => {
-        let message
-        // axios
-        if (error && error.response) {
-          message = error.response.data
-        } else {
-          // throw
-          message = error.message
+          response.payment_gateways.push(creditCard)
         }
 
-        if (message.indexOf('ECONNRESET') === -1 && message.indexOf('ENOTFOUND') === -1) {
-          logger.error(`Listpayment Error | Store #${req.storeId} | Error ${message}`)
-          res.status(400).send({
-            error: 'LIST_PAYMENTS_ERR',
-            message: 'Unexpected Error Try Later'
-          })
-        } else if (retry <= 4) {
-          setTimeout(() => {
-            request()
-          }, retry * 1000)
-          retry++
-        } else {
-          res.status(400).send({
-            error: 'LIST_PAYMENTS_ERR',
-            message: 'Unexpected Error Try Later'
-          })
+        // check if payment options are enabled before adding payment list
+        // baking_billet
+        if (!config.banking_billet || !config.banking_billet.disabled) {
+          const bankingBillet = {
+            ...newPaymentGateway(),
+            payment_method: {
+              code: 'banking_billet',
+              name: 'Boleto Bancário'
+            },
+            label: 'Boleto Bancário',
+            expiration_date: (config && config.banking_billet) ? config.banking_billet.expiration_date : undefined,
+            instruction_lines: {
+              first: 'Atenção',
+              second: 'fique atento à data de vencimento do boleto.',
+              third: 'Pague em qualquer casa lotérica.'
+            },
+            js_client: {
+              transaction_promise: '_senderHash',
+              fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
+              onload_expression: onloadFunction,
+              script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
+            },
+            discount
+          }
+
+          response.payment_gateways.push(bankingBillet)
         }
+
+        // online_debit
+        if (!config.online_debit || !config.online_debit.disabled) {
+          const onlineDebit = {
+            ...newPaymentGateway(),
+            payment_method: {
+              code: 'online_debit',
+              name: 'Débito Online'
+            },
+            label: 'Débito Online',
+            icon: 'http://e-com.club/mass/ftp/others/pagseguro_debito.png',
+            js_client: {
+              transaction_promise: '_senderHash',
+              fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
+              onload_expression: onloadFunction,
+              script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
+            }
+          }
+
+          response.payment_gateways.push(onlineDebit)
+        } else {
+          // remove discount options from response
+          delete response.discount_option
+        }
+
+        // const sortFunc = (a, b) => sort.indexOf(a.payment_method.code) - sort.indexOf(b.payment_method.code)
+        // response.payment_gateways.sort(sortFunc)
+        // response
+        return res.send(response)
+      }
+
+      if (params.is_checkout_confirmation) {
+        logger.log(`Checkout #${req.storeId}`)
+        sendPaymentGateways({})
+      } else {
+        // card session
+        pg.session.new()
+          .then(async session => {
+            let installmentOptions
+            if (params.amount && params.amount.total) {
+              try {
+                installmentOptions = await pg.installments.getInstallments(session, params.amount.total)
+              } catch (e) {
+                // ignore
+              }
+            }
+            sendPaymentGateways({ session, installmentOptions })
+          })
+          .catch(err => {
+            logger.error(err)
+            res.status(400).send({
+              error: 'LIST_PAYMENTS_ERR',
+              message: 'Unexpected error, try again later'
+            })
+          })
+      }
+    })
+
+    .catch(e => {
+      console.log(e)
+      res.status(400).send({
+        error: 'LIST_PAYMENTS_ERR',
+        message: 'No authentication for current store'
       })
-    request()
-  }
+    })
 }
 
-const listPaymentOptions = {
-  discount: (config) => {
-    if (config.hasOwnProperty('discount') && config.discount.value > 0) {
-      return {
-        type: config.discount.type,
-        value: config.discount.value
-      }
-    }
-  },
-  icon: (config) => {
-    if (config.hasOwnProperty('icon')) {
-      return config.icon
-    }
-  },
-  installment_options: (options) => {
-    let installments = []
-    installments = options
-      .installments
-      .visa
-      .filter(installment => installment.quantity > 1)
-      .map(installment => {
-        return {
-          number: installment.quantity,
-          tax: (!installment.interestFree),
-          value: Math.abs(installment.installmentAmount)
-        }
-      })
-    return installments
-  },
-  intermediator: (config) => {
-    if (config.hasOwnProperty('intermediator')) {
-      return {
-        code: config.intermediator.code,
-        link: config.intermediator.link,
-        name: config.intermediator.name
-      }
-    }
-  },
-  js_client: (config, session) => {
-    const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
-    const onloadFunction = `window.pagseguroSessionId="${session}";`
-    const js = {
-      fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
-      onload_expression: onloadFunction,
-      script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
-    }
-
-    if (config.type === 'credit_card') {
-      js.cc_brand = {
-        function: 'pagseguroBrand',
-        is_promise: true
-      }
-      js.cc_hash = {
-        function: 'pagseguroHash',
-        is_promise: true
-      }
-    } else {
-      js.transaction_promise = '_senderHash'
-    }
-    return js
-  },
-  label: (config) => {
-    if (config.hasOwnProperty('name')) {
-      return config.name
-    }
-  },
-  payment_method: (config) => {
-    if (config.hasOwnProperty('type')) {
-      return {
-        code: config.type,
-        name: config.name
-      }
-    }
-  },
-  payment_url: (config) => {
-    if (config.hasOwnProperty('url')) {
-      return config.url
-    }
-  },
-  type: (config) => {
-    return config.payment_type || 'payment'
+const newPaymentGateway = () => {
+  return {
+    intermediator: {
+      code: 'pagseguro',
+      link: 'https://www.pagseguro.com.br',
+      name: 'Pagseguro'
+    },
+    payment_url: 'https://www.pagseguro.com.br/',
+    type: 'payment'
   }
 }
