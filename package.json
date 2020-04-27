@@ -6,7 +6,8 @@
   "main": "main.js",
   "scripts": {
     "start": "ECOM_AUTH_DB=/var/dbs/pagseguro.sqlite LOGGER_OUTPUT=/var/log/nodejs/pagseguro.out LOGGER_ERRORS=/var/log/nodejs/pagseguro.error nodemon main.js",
-    "release": "standard-version"
+    "release": "standard-version",
+    "publish:market": "node ./scripts/market-publication.js"
   },
   "dependencies": {
     "axios": "^0.19.0",
