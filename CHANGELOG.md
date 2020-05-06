@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.43](https://github.com/ecomclub/app-pagseguro/compare/v0.5.42...v0.5.43) (2020-05-06)
+
+
+### Bug Fixes
+
+* app_id ([ea15c3e](https://github.com/ecomclub/app-pagseguro/commit/ea15c3e86bb8b7e1bc5a7e31af2bf4e8cf6321a7))
+* close window after callback ([4b09c52](https://github.com/ecomclub/app-pagseguro/commit/4b09c52b4ea904504a0dd2de8fa0df96f415a656))
+* market:publish script ([6465a56](https://github.com/ecomclub/app-pagseguro/commit/6465a56d0db3065d5a928607e3ade3f16389375b))
+
 ### [0.5.42](https://github.com/ecomclub/app-pagseguro/compare/v0.5.41...v0.5.42) (2020-04-16)
 
 
