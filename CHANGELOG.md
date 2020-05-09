@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.44](https://github.com/ecomclub/app-pagseguro/compare/v0.5.43...v0.5.44) (2020-05-09)
+
+
+### Bug Fixes
+
+* **webhook:** returning status 500 when no order is found ([2d66061](https://github.com/ecomclub/app-pagseguro/commit/2d66061ac096712400921560d1a87de605e016d7))
+
 ### [0.5.43](https://github.com/ecomclub/app-pagseguro/compare/v0.5.42...v0.5.43) (2020-05-06)
 
 
