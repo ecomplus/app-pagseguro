@@ -1,60 +1,66 @@
 'use strict'
+
 const PagSeguro = require('./../../lib/pagseguro/pagseguro-client')
 const { getTransaction } = require('./../../lib/database')
 const logger = require('console-files')
-const ECHO_SUCCESS = 'SUCCESS'
 
-module.exports = (appSdk) => {
+module.exports = appSdk => {
   return (req, res) => {
     const { notificationCode, notificationType } = req.body
-
     if (notificationType !== 'transaction') {
-      return res.send(ECHO_SUCCESS)
+      return res.sendStatus(204)
     }
+    logger.log(`> Notification: #${notificationCode}`)
 
     const client = new PagSeguro({
       appId: process.env.PS_APP_ID,
       appKey: process.env.PS_APP_KEY
     })
 
-    let retry = 0
-    logger.log(`> Notification: #${notificationCode}`)
-    const checkOrderTransaction = (storeId, pgTrasactionCode, pgTrasactionStatus) => {
-      const url = `orders.json?transactions.intermediator.transaction_code=${pgTrasactionCode}&fields=_id,number,transactions._id,transactions.intermediator.transaction_code,financial_status`
+    const checkOrderTransaction = (storeId, pgTrasactionCode, pgTrasactionStatus, isRetry) => {
+      const url = `orders.json?transactions.intermediator.transaction_code=${pgTrasactionCode}` +
+        `&fields=_id,transactions._id,transactions.intermediator,transaction.status`
 
-      const tryAgain = () => {
-        const interval = retry * 1000 + 4000
-        setTimeout(() => checkOrderTransaction(storeId, pgTrasactionCode, pgTrasactionStatus), interval)
-        retry++
-      }
-
-      return appSdk.apiRequest(storeId, url)
-        .then(resp => resp.response.data)
-        .then(data => {
-          if (data.result && data.result.length) {
-            const order = data.result[0]
-            if (order && order.transactions) {
-              const orderTransactions = order.transactions.find(trans => trans.intermediator.transaction_code === pgTrasactionCode)
-              if (orderTransactions && parseInt(pgTrasactionStatus) !== 4) {
-                const resource = `orders/${order._id}/payments_history.json`
-                const method = 'POST'
-                const body = {
-                  transaction_id: orderTransactions._id,
-                  date_time: new Date().toISOString(),
-                  status: paymentStatus(pgTrasactionStatus),
-                  notification_code: notificationCode,
-                  flags: ['pagseguro']
-                }
-
-                return appSdk.apiRequest(storeId, resource, method, body)
+      return appSdk.apiRequest(storeId, url).then(({ response }) => {
+        const { data } = response
+        if (data.result && data.result.length) {
+          const order = data.result[0]
+          if (order && order.transactions) {
+            const transaction = order.transactions.find(({ intermediator }) => {
+              return intermediator && intermediator.transaction_code === pgTrasactionCode
+            })
+            if (
+              transaction &&
+              (Number(pgTrasactionStatus) !== 4 ||
+                !transaction.status || transaction.status.current !== 'paid')
+            ) {
+              const url = `orders/${order._id}/payments_history.json`
+              const method = 'POST'
+              const body = {
+                transaction_id: transaction._id,
+                date_time: new Date().toISOString(),
+                status: paymentStatus(pgTrasactionStatus),
+                notification_code: notificationCode,
+                flags: ['pagseguro']
               }
-            } else if (retry <= 4) {
-              tryAgain()
+              return appSdk.apiRequest(storeId, url, method, body)
             }
-          } else if (retry <= 4) {
-            tryAgain()
           }
-        })
+        }
+
+        if (!isRetry) {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              checkOrderTransaction(storeId, pgTrasactionCode, pgTrasactionStatus, true)
+                .then(resolve).catch(reject)
+            }, 5000)
+          })
+        }
+
+        const err = new Error('Order not found')
+        err.name = 'NotFound'
+        throw err
+      })
     }
 
     return client
@@ -62,7 +68,8 @@ module.exports = (appSdk) => {
       .getNotification(notificationCode)
 
       .then(pgTransaction => {
-        return getTransaction(pgTransaction.code).then(data => ({ localTransaction: data, pgTransaction }))
+        return getTransaction(pgTransaction.code)
+          .then(data => ({ localTransaction: data, pgTransaction }))
       })
 
       .then(({ localTransaction, pgTransaction }) => {
