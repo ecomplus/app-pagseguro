@@ -29,21 +29,23 @@ module.exports = appSdk => {
             const transaction = order.transactions.find(({ intermediator }) => {
               return intermediator && intermediator.transaction_code === pgTrasactionCode
             })
-            if (
-              transaction &&
-              (Number(pgTrasactionStatus) !== 4 ||
-                !transaction.status || transaction.status.current !== 'paid')
-            ) {
-              const url = `orders/${order._id}/payments_history.json`
-              const method = 'POST'
-              const body = {
-                transaction_id: transaction._id,
-                date_time: new Date().toISOString(),
-                status: paymentStatus(pgTrasactionStatus),
-                notification_code: notificationCode,
-                flags: ['pagseguro']
+            if (transaction) {
+              if (
+                Number(pgTrasactionStatus) !== 4 ||
+                !transaction.status || transaction.status.current !== 'paid'
+              ) {
+                const url = `orders/${order._id}/payments_history.json`
+                const method = 'POST'
+                const body = {
+                  transaction_id: transaction._id,
+                  date_time: new Date().toISOString(),
+                  status: paymentStatus(pgTrasactionStatus),
+                  notification_code: notificationCode,
+                  flags: ['pagseguro']
+                }
+                return appSdk.apiRequest(storeId, url, method, body)
               }
-              return appSdk.apiRequest(storeId, url, method, body)
+              return true
             }
           }
         }
