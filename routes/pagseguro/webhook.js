@@ -86,7 +86,7 @@ module.exports = appSdk => {
       .catch(err => {
         console.error(err)
         if (err.name !== 'NotFound') {
-          logger.error('PgNotificationErr', err)
+          logger.error(`PgNotificationErr ${notificationCode} ${notificationType}`, err)
         }
         return res.status(500).send(err)
       })
