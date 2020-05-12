@@ -12,5 +12,5 @@ require('./bin/web')
 // by doing that the app may be able to be executed on multiple servers (load balancing)
 if (process.env.DAEMON_SERVICES === 'true' || process.env.DAEMON_SERVICES === true) {
   // local application
-  // require('./bin/local')
+   require('./bin/local')
 }
