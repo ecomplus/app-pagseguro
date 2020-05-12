@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.47](https://github.com/ecomclub/app-pagseguro/compare/v0.5.44...v0.5.47) (2020-05-12)
+
+
+### Features
+
+* pagseguro orders background status updater ([c57c600](https://github.com/ecomclub/app-pagseguro/commit/c57c600ed421a65bdcc51b1e762a351410038854))
+* **pagseguro:** fetch transaction by transactionCode ([5b9eebe](https://github.com/ecomclub/app-pagseguro/commit/5b9eebe11a65c97e7a7a8713d7ee75f371dafc86))
+
+
+### Bug Fixes
+
+* **webhook:** debug failed webhooks with notification code/type ([1ed2d5d](https://github.com/ecomclub/app-pagseguro/commit/1ed2d5dc93721634c75da38880b79d17209c63d2))
+* **webhook:** prevent skipping transaction status 4 ("disponível") ([ae97103](https://github.com/ecomclub/app-pagseguro/commit/ae97103a9bf99987eae4241bbdbf6318d745abd2))
+* **webhook:** resolve promise and return 200 if status should be skiped ([58af2e2](https://github.com/ecomclub/app-pagseguro/commit/58af2e272e301fa5920af5d33e2f11400b173e04))
+
 ### [0.5.46](https://github.com/ecomplus/app-pagseguro/compare/v0.5.45...v0.5.46) (2020-05-11)
 
 
