@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.48](https://github.com/ecomclub/app-pagseguro/compare/v0.5.47...v0.5.48) (2020-05-12)
+
+
+### Bug Fixes
+
+* **pagseguro-orders-update:** fix startup, filter by order creation date and limit results ([5c79467](https://github.com/ecomclub/app-pagseguro/commit/5c7946704ace2522c3674b1bd7a37231b7849703))
+
 ### [0.5.47](https://github.com/ecomclub/app-pagseguro/compare/v0.5.44...v0.5.47) (2020-05-12)
 
 
