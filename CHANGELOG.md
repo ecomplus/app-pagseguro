@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.49](https://github.com/ecomplus/app-pagseguro/compare/v0.5.48...v0.5.49) (2020-05-15)
+
+
+### Bug Fixes
+
+* **pagseguro-client:** fix 'trimString' internal function (check string) ([b4db9c6](https://github.com/ecomplus/app-pagseguro/commit/b4db9c676971ac114c423db8215239992cef3361))
+
 ### [0.5.48](https://github.com/ecomclub/app-pagseguro/compare/v0.5.47...v0.5.48) (2020-05-12)
 
 
