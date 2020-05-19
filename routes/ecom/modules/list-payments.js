@@ -127,8 +127,11 @@ module.exports = appSdk => {
               fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
               onload_expression: onloadFunction,
               script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
-            },
-            discount
+            }
+          }
+
+          if (discount && discount.value > 0) { 
+            bankingBillet.discount = discount
           }
 
           response.payment_gateways.push(bankingBillet)
