@@ -19,7 +19,7 @@ module.exports = appSdk => {
 
     const checkOrderTransaction = (storeId, pgTrasactionCode, pgTrasactionStatus, isRetry) => {
       const url = `orders.json?transactions.intermediator.transaction_code=${pgTrasactionCode}` +
-        `&fields=_id,transactions._id,transactions.intermediator,transaction.status`
+        '&fields=_id,financial_status,transactions._id,transactions.intermediator,transaction.status'
 
       return appSdk.apiRequest(storeId, url).then(({ response }) => {
         const { data } = response
@@ -30,22 +30,29 @@ module.exports = appSdk => {
               return intermediator && intermediator.transaction_code === pgTrasactionCode
             })
             if (transaction) {
-              if (
-                Number(pgTrasactionStatus) !== 4 ||
-                !transaction.status || transaction.status.current !== 'paid'
-              ) {
-                const url = `orders/${order._id}/payments_history.json`
-                const method = 'POST'
-                const body = {
-                  transaction_id: transaction._id,
-                  date_time: new Date().toISOString(),
-                  status: paymentStatus(pgTrasactionStatus),
-                  notification_code: notificationCode,
-                  flags: ['pagseguro']
-                }
-                return appSdk.apiRequest(storeId, url, method, body)
+              const status = paymentStatus(pgTrasactionStatus)
+              switch (status) {
+                case 'paid':
+                case 'pending':
+                case 'under_analysis':
+                  if (
+                    (transaction.status && transaction.status.current === status) ||
+                    (order.financial_status && order.financial_status.current === status)
+                  ) {
+                    return true
+                  }
               }
-              return true
+
+              const url = `orders/${order._id}/payments_history.json`
+              const method = 'POST'
+              const body = {
+                transaction_id: transaction._id,
+                date_time: new Date().toISOString(),
+                status,
+                notification_code: notificationCode,
+                flags: ['pagseguro']
+              }
+              return appSdk.apiRequest(storeId, url, method, body)
             }
           }
         }
