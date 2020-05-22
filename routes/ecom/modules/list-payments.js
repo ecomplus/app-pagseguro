@@ -44,7 +44,6 @@ module.exports = appSdk => {
           }
         }
 
-
         const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
         let onloadFunction = `window.pagseguroSessionId="${session}";`
         if (installmentOptions && installmentOptions.installments) {
@@ -94,12 +93,13 @@ module.exports = appSdk => {
                 }
               })
 
-            //response.installments_option
             const installmentsOption = visa.find(option => option.interestFree === false)
-            response.installments_option = {
-              min_installment: installmentsOption.quantity,
-              max_number: visa.length,
-              monthly_interest: 0
+            if (installmentsOption) {
+              response.installments_option = {
+                min_installment: installmentsOption.quantity,
+                max_number: visa.length,
+                monthly_interest: 0
+              }
             }
           }
 
@@ -130,7 +130,7 @@ module.exports = appSdk => {
             }
           }
 
-          if (discount && discount.value > 0) { 
+          if (discount && discount.value > 0) {
             bankingBillet.discount = discount
           }
 
