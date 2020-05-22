@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.52](https://github.com/ecomplus/app-pagseguro/compare/v0.5.51...v0.5.52) (2020-05-22)
+
+
+### Bug Fixes
+
+* **list-payments:** check if `installmentsOption` is defined ([603ff09](https://github.com/ecomplus/app-pagseguro/commit/603ff0983d84315255bc6d32f6d99564e43fb95b))
+
 ### [0.5.51](https://github.com/ecomplus/app-pagseguro/compare/v0.5.50...v0.5.51) (2020-05-22)
 
 
