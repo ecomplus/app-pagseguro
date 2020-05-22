@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.51](https://github.com/ecomplus/app-pagseguro/compare/v0.5.50...v0.5.51) (2020-05-22)
+
+
+### Bug Fixes
+
+* **pagseguro-webhook:** fix checking duplicated status notification ([657fc39](https://github.com/ecomplus/app-pagseguro/commit/657fc391b0eb89668e22b70bbb884a8ad0d72da0))
+
 ### [0.5.50](https://github.com/ecomclub/app-pagseguro/compare/v0.5.48...v0.5.50) (2020-05-19)
 
 
