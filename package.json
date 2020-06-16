@@ -10,11 +10,11 @@
     "publish:market": "node ./scripts/market-publication.js"
   },
   "dependencies": {
-    "@ecomplus/application-sdk": "^1.12.3",
+    "@ecomplus/application-sdk": "^1.13.0",
     "axios": "^0.19.2",
     "console-files": "^2.3.1",
     "express": "4.x",
-    "jstoxml": "^1.6.6",
+    "jstoxml": "^1.6.7",
     "sqlite3": "^4.2.0",
     "xml2json": "^0.11.2"
   },
