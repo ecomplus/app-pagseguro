@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/ecomplus/app-pagseguro/compare/v1.0.0...v1.1.0) (2020-06-17)
+
+
+### Features
+
+* **installments:** handle 'max_interest_free' for default installments option ([5d1cf7d](https://github.com/ecomplus/app-pagseguro/commit/5d1cf7dc07692105831ab0f0b35f2a4c00a70183))
+
+
+### Bug Fixes
+
+* **deps:** bump @ecomplus/application-sdk to sqlite version ([dfd8072](https://github.com/ecomplus/app-pagseguro/commit/dfd8072e7a293ff8a00263600b743f0070af4ffc))
+
 ## [1.0.0](https://github.com/ecomplus/app-pagseguro/compare/v0.5.52...v1.0.0) (2020-06-17)
 
 
