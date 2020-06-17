@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0](https://github.com/ecomplus/app-pagseguro/compare/v0.5.52...v1.0.0) (2020-06-17)
+
+
+### Features
+
+* **admin-settings:** installments config (max number, min installment) ([e4f192a](https://github.com/ecomplus/app-pagseguro/commit/e4f192a9a501a3941a3d68ccd5944698f4b0b173))
+
+
+### Bug Fixes
+
+* **debug:** fix objects to log and error response ([9ed36d7](https://github.com/ecomplus/app-pagseguro/commit/9ed36d7399684bc2baad264e85260710cb932190))
+* **list-payments:** fix handling installments, with config options ([565c2ee](https://github.com/ecomplus/app-pagseguro/commit/565c2ee7ae496f12aecec3441a476bff32254c55))
+
 ### [0.5.52](https://github.com/ecomplus/app-pagseguro/compare/v0.5.51...v0.5.52) (2020-05-22)
 
 
