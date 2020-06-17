@@ -168,7 +168,7 @@ module.exports = appSdk => {
       }
 
       if (params.is_checkout_confirmation) {
-        logger.log(`Checkout #${req.storeId}`)
+        // logger.log(`Checkout #${req.storeId}`)
         sendPaymentGateways({})
       } else {
         // card session
@@ -185,7 +185,10 @@ module.exports = appSdk => {
             sendPaymentGateways({ session, installmentOptions })
           })
           .catch(err => {
-            logger.error(err)
+            // skip debugging PagSeguro WS server errors
+            if (err.code !== 'ECONNRESET' && err.code !== 'EHOSTUNREACH') {
+              logger.error(err)
+            }
             res.status(409).send({
               error: 'PAGSEGURO_SESSION_ERR',
               message: err.message || 'Unexpected error, try again later'
