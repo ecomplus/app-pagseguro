@@ -26,8 +26,6 @@ ecomAuth.then(appSdk => {
       })
     }
   }
-
-  //
   require('../lib/pagseguro-orders-updater')(appSdk)
 })
 

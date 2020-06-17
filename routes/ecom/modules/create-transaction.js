@@ -9,7 +9,7 @@ module.exports = () => {
     const { params } = req.body
     const storeId = req.storeId
     logger.log(`Transaction #${storeId} ${params.order_number}`)
-    
+
     getPagSeguroAuth(storeId)
       .then(async auth => {
         // pagseguro client
@@ -68,9 +68,9 @@ module.exports = () => {
         err.storeId = storeId
         err.orderNumber = params.order_number
         logger.error(err)
-        return res.status(400).send({
-          error: 'CREATE_TRANSACTION_ERR',
-          message: 'Unexpected error, try again later'
+        return res.status(409).send({
+          error: 'PS_TRANSACTION_INVALID',
+          message: err.message || 'Unexpected error, try again later'
         })
       })
   }

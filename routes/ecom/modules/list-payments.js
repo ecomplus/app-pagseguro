@@ -186,17 +186,16 @@ module.exports = appSdk => {
           })
           .catch(err => {
             logger.error(err)
-            res.status(400).send({
-              error: 'LIST_PAYMENTS_ERR',
-              message: 'Unexpected error, try again later'
+            res.status(409).send({
+              error: 'PAGSEGURO_SESSION_ERR',
+              message: err.message || 'Unexpected error, try again later'
             })
           })
       }
     })
 
     .catch(e => {
-      console.log(e)
-      res.status(400).send({
+      res.status(409).send({
         error: 'LIST_PAYMENTS_ERR',
         message: 'No authentication for current store'
       })
