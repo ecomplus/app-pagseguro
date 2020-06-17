@@ -44,6 +44,15 @@ module.exports = appSdk => {
           }
         }
 
+        // default installments option
+        if (config.credit_card && config.credit_card.max_interest_free >= 2) {
+          response.installments_option = {
+            min_installment: config.credit_card.min_installment || 5,
+            max_number: config.max_interest_free,
+            monthly_interest: 0
+          }
+        }
+
         // get installments list using Visa as default
         let fixedPsInstallments, parsedInstallments
         if (installmentOptions && installmentOptions.installments && installmentOptions.installments.visa) {
@@ -83,7 +92,7 @@ module.exports = appSdk => {
             ...newPaymentGateway(),
             payment_method: {
               code: 'credit_card',
-              name: 'Cartão de crédito - pagseguro'
+              name: 'Cartão de crédito - PagSeguro'
             },
             label: 'Cartão de crédito',
             installment_options: [],
@@ -126,9 +135,9 @@ module.exports = appSdk => {
             ...newPaymentGateway(),
             payment_method: {
               code: 'banking_billet',
-              name: 'Boleto Bancário'
+              name: 'Boleto bancário - PagSeguro'
             },
-            label: 'Boleto Bancário',
+            label: 'Boleto bancário',
             expiration_date: (config && config.banking_billet) ? config.banking_billet.expiration_date : undefined,
             instruction_lines: {
               first: 'Atenção',
@@ -156,9 +165,9 @@ module.exports = appSdk => {
             ...newPaymentGateway(),
             payment_method: {
               code: 'online_debit',
-              name: 'Débito Online'
+              name: 'Débito online - PagSeguro'
             },
-            label: 'Débito Online',
+            label: 'Débito online',
             icon: 'https://e-com.club/mass/ftp/others/pagseguro_debito.png',
             js_client: {
               transaction_promise: '_senderHash',

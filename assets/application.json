@@ -57,6 +57,13 @@
             "maximum": 999,
             "title": "Máximo de parcelas",
             "description": "Número máximo de parcelas"
+          },
+          "max_interest_free": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 999,
+            "title": "Parcelas sem juros",
+            "description": "Parcelamento sem juros como configurado na conta PagSeguro"
           }
         }
       },
