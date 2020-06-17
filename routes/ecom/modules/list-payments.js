@@ -44,10 +44,34 @@ module.exports = appSdk => {
           }
         }
 
+        // get installments list using Visa as default
+        let fixedPsInstallments, parsedInstallments
+        if (installmentOptions && installmentOptions.installments && installmentOptions.installments.visa) {
+          fixedPsInstallments = installmentOptions.installments.visa
+            .filter(({ quantity, installmentAmount }) => {
+              if (
+                config.credit_card &&
+                (config.credit_card.max_number < quantity ||
+                  Math.abs(installmentAmount) < config.credit_card.min_installment)
+              ) {
+                return false
+              }
+              return quantity > 1
+            })
+          parsedInstallments = fixedPsInstallments
+            .map(installment => {
+              return {
+                number: installment.quantity,
+                tax: !installment.interestFree,
+                value: Math.abs(installment.installmentAmount)
+              }
+            })
+        }
+
         const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
         let onloadFunction = `window.pagseguroSessionId="${session}";`
-        if (installmentOptions && installmentOptions.installments) {
-          const installmentsJson = JSON.stringify(installmentOptions.installments.visa)
+        if (fixedPsInstallments) {
+          const installmentsJson = JSON.stringify(fixedPsInstallments)
           if (installmentsJson.length > 50 && installmentsJson.length <= 1500) {
             onloadFunction += `window.pagseguroInstallments=${installmentsJson};`
           }
@@ -80,24 +104,13 @@ module.exports = appSdk => {
             card_companies: config.card_companies
           }
 
-          if (installmentOptions && installmentOptions.installments && installmentOptions.installments.visa) {
-            const { visa } = installmentOptions.installments
-
-            creditCard.installment_options = visa
-              .filter(installment => installment.quantity > 1)
-              .map(installment => {
-                return {
-                  number: installment.quantity,
-                  tax: (!installment.interestFree),
-                  value: Math.abs(installment.installmentAmount)
-                }
-              })
-
-            const installmentsOption = visa.find(option => option.interestFree === false)
+          if (parsedInstallments) {
+            creditCard.installment_options = parsedInstallments
+            const installmentsOption = fixedPsInstallments.find(option => option.interestFree)
             if (installmentsOption) {
               response.installments_option = {
-                min_installment: installmentsOption.quantity,
-                max_number: visa.length,
+                min_installment: (config.credit_card && config.credit_card.min_installment) || 5,
+                max_number: installmentsOption.quantity,
                 monthly_interest: 0
               }
             }
