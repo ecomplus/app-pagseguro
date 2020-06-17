@@ -208,7 +208,11 @@ module.exports = appSdk => {
           })
           .catch(err => {
             // skip debugging PagSeguro WS server errors
-            if (err.code !== 'ECONNRESET' && err.code !== 'EHOSTUNREACH') {
+            if (
+              err.code !== 'ECONNRESET' &&
+              err.code !== 'EHOSTUNREACH' &&
+              (!err.response || (err.response.status !== 404 && err.response.status !== 401))
+            ) {
               logger.error(err)
             }
             res.status(409).send({
