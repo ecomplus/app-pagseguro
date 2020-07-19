@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.52](https://github.com/ecomclub/app-pagseguro/compare/v0.5.51...v0.5.52) (2020-07-19)
+
+
+### Bug Fixes
+
+* checkout confirmation ([3198d3b](https://github.com/ecomclub/app-pagseguro/commit/3198d3b68b68a03fb47983a3c205d744242cbf58))
+
+### [1.1.2](https://github.com/ecomclub/app-pagseguro/compare/v1.1.1...v1.1.2) (2020-06-17)
+
+### [1.1.1](https://github.com/ecomclub/app-pagseguro/compare/v1.1.0...v1.1.1) (2020-06-17)
+
+## [1.1.0](https://github.com/ecomclub/app-pagseguro/compare/v1.0.0...v1.1.0) (2020-06-17)
+
+
+### Features
+
+* **installments:** handle 'max_interest_free' for default installments option ([5d1cf7d](https://github.com/ecomclub/app-pagseguro/commit/5d1cf7dc07692105831ab0f0b35f2a4c00a70183))
+
+
+### Bug Fixes
+
+* **deps:** bump @ecomplus/application-sdk to sqlite version ([dfd8072](https://github.com/ecomclub/app-pagseguro/commit/dfd8072e7a293ff8a00263600b743f0070af4ffc))
+
+## [1.0.0](https://github.com/ecomclub/app-pagseguro/compare/v0.5.52...v1.0.0) (2020-06-17)
+
+
+### Features
+
+* **admin-settings:** installments config (max number, min installment) ([e4f192a](https://github.com/ecomclub/app-pagseguro/commit/e4f192a9a501a3941a3d68ccd5944698f4b0b173))
+
+
+### Bug Fixes
+
+* **debug:** fix objects to log and error response ([9ed36d7](https://github.com/ecomclub/app-pagseguro/commit/9ed36d7399684bc2baad264e85260710cb932190))
+* **list-payments:** fix handling installments, with config options ([565c2ee](https://github.com/ecomclub/app-pagseguro/commit/565c2ee7ae496f12aecec3441a476bff32254c55))
+
+### [0.5.52](https://github.com/ecomclub/app-pagseguro/compare/v0.5.50...v0.5.52) (2020-05-22)
+
+
+### Bug Fixes
+
+* **list-payments:** check if `installmentsOption` is defined ([603ff09](https://github.com/ecomclub/app-pagseguro/commit/603ff0983d84315255bc6d32f6d99564e43fb95b))
+* **pagseguro-webhook:** fix checking duplicated status notification ([657fc39](https://github.com/ecomclub/app-pagseguro/commit/657fc391b0eb89668e22b70bbb884a8ad0d72da0))
+
 ### [0.5.51](https://github.com/ecomclub/app-pagseguro/compare/v0.5.50...v0.5.51) (2020-07-19)
 
 
