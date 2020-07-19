@@ -28,7 +28,7 @@ ecomAuth.then(appSdk => {
   }
 
   //
-  require('../lib/pagseguro-orders-updater')(appSdk)
+  require('../lib/pagseguro/transactions-updater')(appSdk)
 })
 
 ecomAuth.catch(err => {
