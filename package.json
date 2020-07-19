@@ -5,7 +5,7 @@
   "description": "Pagseguro for E-Com Plus",
   "main": "main.js",
   "scripts": {
-    "start": "ECOM_AUTH_DB=/var/dbs/pagseguro.sqlite LOGGER_OUTPUT=/var/log/nodejs/pagseguro.out LOGGER_ERRORS=/var/log/nodejs/pagseguro.error nodemon --inspect main.js",
+    "start": "PS_APP_NOTIFICATION_URL='https://pagseguro.ngrok.io/pagseguro/webhook' ECOM_AUTH_DB=/var/dbs/pagseguro.sqlite LOGGER_OUTPUT=/var/log/nodejs/pagseguro.out LOGGER_ERRORS=/var/log/nodejs/pagseguro.error nodemon --inspect main.js",
     "release": "standard-version",
     "publish:market": "node ./scripts/market-publication.js"
   },
