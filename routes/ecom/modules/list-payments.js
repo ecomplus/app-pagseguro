@@ -166,9 +166,12 @@ module.exports = () => {
     return database
       .getPagSeguroAuth(storeId)
       .then(pgAuth => {
-        const authorizationCode = pgAuth.authorization_code
-        const method = 'post'
-        if (!params.is_checkout_confirmation) {
+        if (params.is_checkout_confirmation) {
+          logger.log(`Checkout #${req.storeId}`)
+          return sendPaymentGateways({})
+        } else {
+          const authorizationCode = pgAuth.authorization_code
+          const method = 'post'
           // card session
           return pgClient({
             url: '/v2/sessions',
@@ -187,9 +190,6 @@ module.exports = () => {
               return sendPaymentGateways({ session: session.id, installmentOptions })
             })
         }
-
-        logger.log(`Checkout #${req.storeId}`)
-        return sendPaymentGateways({})
       })
 
       .catch(err => {
