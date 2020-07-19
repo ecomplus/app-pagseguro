@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.51](https://github.com/ecomclub/app-pagseguro/compare/v0.5.50...v0.5.51) (2020-07-19)
+
+
+### Features
+
+* **application.json:** enabled installments_option ([51f2c68](https://github.com/ecomclub/app-pagseguro/commit/51f2c685ab054dc0af4002cd40020c079d611478))
+
 ### [0.5.50](https://github.com/ecomclub/app-pagseguro/compare/v0.5.48...v0.5.50) (2020-05-19)
 
 
