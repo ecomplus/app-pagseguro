@@ -3,7 +3,7 @@
   "state": "active",
   "title": "PagSeguro",
   "slug": "pagseguro",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "external",
   "authentication": true,
   "auth_callback_uri": "https://pagseguro.ecomplus.biz/ecom/auth-callback",
@@ -26,22 +26,44 @@
     "sort": {
       "schema": {
         "type": "string",
-        "title": "Ordem de Pagamento",
+        "title": "Ordem de pagamento",
         "description": "Defina qual das modalidades de pagamento que irão aparecer primeiro no checkout.",
-        "enum": ["Débito Online", "Cartão de Crédito", "Boleto Bancário"]
+        "enum": ["Débito online", "Cartão de crédito", "Boleto bancário"]
       },
       "hide": false
     },
     "credit_card": {
       "schema": {
         "type": "object",
-        "title": "Cartão de Crédito",
+        "title": "Cartão de crédito",
         "description": "Configurações para pagamento com cartão de crédito",
         "properties": {
           "disabled": {
             "type": "boolean",
             "title": "Desabilitar opção de pagamento",
             "default": false
+          },
+          "min_installment": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 99999999,
+            "default": 5,
+            "title": "Parcela mínima",
+            "description": "Valor mínimo da parcela"
+          },
+          "max_number": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 999,
+            "title": "Máximo de parcelas",
+            "description": "Número máximo de parcelas"
+          },
+          "max_interest_free": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 999,
+            "title": "Parcelas sem juros",
+            "description": "Parcelamento sem juros como configurado na conta PagSeguro"
           }
         }
       },
