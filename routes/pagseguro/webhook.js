@@ -1,8 +1,7 @@
 'use strict'
-
-const PagSeguro = require('./../../lib/pagseguro/pagseguro-client')
-const { getTransaction } = require('./../../lib/database')
 const logger = require('console-files')
+const pgClient = require('./../../lib/pagseguro/client')
+const database = require('./../../lib/database')
 
 module.exports = appSdk => {
   return (req, res) => {
@@ -11,11 +10,6 @@ module.exports = appSdk => {
       return res.sendStatus(204)
     }
     logger.log(`> Notification: #${notificationCode}`)
-
-    const client = new PagSeguro({
-      appId: process.env.PS_APP_ID,
-      appKey: process.env.PS_APP_KEY
-    })
 
     const checkOrderTransaction = (storeId, pgTrasactionCode, pgTrasactionStatus, isRetry) => {
       const url = `orders.json?transactions.intermediator.transaction_code=${pgTrasactionCode}` +
@@ -65,31 +59,34 @@ module.exports = appSdk => {
       })
     }
 
-    return client
-      .notification
-      .getNotification(notificationCode)
+    setTimeout(() => {
+      return pgClient({
+        url: `/v3/transactions/notifications/${notificationCode}`
+      }, true)
 
-      .then(pgTransaction => {
-        return getTransaction(pgTransaction.code)
-          .then(data => ({ localTransaction: data, pgTransaction }))
-      })
+        .then(data => {
+          const pgTransaction = data.transaction
+          return database.getTransaction(pgTransaction.code)
+            .then(data => ({ localTransaction: data, pgTransaction }))
+        })
 
-      .then(({ localTransaction, pgTransaction }) => {
-        const storeId = localTransaction.transaction_store_id
-        const pgTrasactionCode = pgTransaction.code
-        const pgTrasactionStatus = pgTransaction.status
-        return checkOrderTransaction(storeId, pgTrasactionCode, pgTrasactionStatus)
-      })
+        .then(({ localTransaction, pgTransaction }) => {
+          const storeId = localTransaction.transaction_store_id
+          const pgTrasactionCode = pgTransaction.code
+          const pgTrasactionStatus = pgTransaction.status
+          return checkOrderTransaction(storeId, pgTrasactionCode, pgTrasactionStatus)
+        })
 
-      .then(() => res.status(200).end())
+        .then(() => res.status(200).end())
 
-      .catch(err => {
-        console.error(err)
-        if (err.name !== 'NotFound') {
-          logger.error(`PgNotificationErr ${notificationCode} ${notificationType}`, err)
-        }
-        return res.status(500).send(err)
-      })
+        .catch(err => {
+          console.error(err)
+          if (err.name !== 'NotFound') {
+            logger.error(`PgNotificationErr ${notificationCode} ${notificationType}`, err)
+          }
+          return res.status(500).send(err)
+        })
+    }, 1000)
   }
 }
 

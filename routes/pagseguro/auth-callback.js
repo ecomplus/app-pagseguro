@@ -1,44 +1,31 @@
 'use strict'
 const logger = require('console-files')
-const axios = require('axios')
-const xmlToJson = require('xml2json')
-const { save } = require('./../../lib/database')
-/**
- * @description Pagseguro API PATH
- */
-const PAGSEGURO_API_PATH = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? 'https://ws.sandbox.pagseguro.uol.com.br' : 'https://ws.pagseguro.uol.com.br'
+const { saveAuth, removeAuth } = require('./../../lib/database')
+const pgClient = require('./../../lib/pagseguro/client')
 
 module.exports = () => {
   return (req, res) => {
     const { notificationCode } = req.query
-    const appId = process.env.PS_APP_ID
-    const appKey = process.env.PS_APP_KEY
-    const resource = `${PAGSEGURO_API_PATH}/v2/authorizations/notifications/${notificationCode}?appId=${appId}&appKey=${appKey}`
-    const options = {
-      url: resource,
-      method: 'GET'
-    }
+    pgClient({
+      url: `/v2/authorizations/notifications/${notificationCode}`
+    }, true)
 
-    axios(options)
-      .then(result => {
-        return result.data
-      })
       .then(data => {
-        const auth = JSON.parse(xmlToJson.toJson(data))
-        save(auth.authorization.code, auth.authorization.authorizerEmail, auth.authorization.reference, auth.authorization.account.publicKey, JSON.stringify(auth.authorization.permissions))
         res.status(200)
-        res.write('<script>window.close()</script>')
-        return res.end()
+        res.write('Pronto! Já pode fechar a janela')
+        res.end()
+        const { code, authorizerEmail, reference, account, permissions } = data.authorization
+        return removeAuth(reference).then(() => saveAuth(code, authorizerEmail, reference, account.publicKey, JSON.stringify(permissions))).then(() => reference)
       })
+
+      .then(storeId => {
+        logger.log('Setup authentication for store #' + storeId)
+      })
+
       .catch(e => {
         logger.error('PAGSEGURO_AUTH_CALLBACK_ERR:', e)
-        res.status(400)
-        res.write(`
-          <div>
-            <h6>Ocorreu um erro com a authenticação</h6>
-            <span>Tente novamente mais tarde</span>
-          </div>
-        `)
+        res.status(500)
+        res.write('Ops! Houve um erro enquanto autorizávamos o aplicativo, tente novamente mais tarde ou informe esse erro na community.e-com.plus')
         return res.end()
       })
   }

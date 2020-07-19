@@ -39,7 +39,7 @@ module.exports = () => {
       }
 
       const sandbox = (process.env.PS_APP_SANDBOX && process.env.PS_APP_SANDBOX === 'true') ? '-sandbox' : ''
-      let onloadFunction = `window.pagseguroSessionId="${session.id}";`
+      let onloadFunction = `window.pagseguroSessionId="${session}";`
       if (installmentOptions && installmentOptions.installments) {
         const installmentsJson = JSON.stringify(installmentOptions.installments.visa)
         if (installmentsJson.length > 50 && installmentsJson.length <= 1500) {
@@ -184,7 +184,7 @@ module.exports = () => {
               return { session, installmentOptions: undefined }
             })
             .then(({ session, installmentOptions }) => {
-              return sendPaymentGateways({ session, installmentOptions })
+              return sendPaymentGateways({ session: session.id, installmentOptions })
             })
         }
 
@@ -200,7 +200,8 @@ module.exports = () => {
           })
         } else {
           const { response, message } = err
-          res.status(response.httpStatusCode || 400).send({
+          console.log(err)
+          res.status(response && response.httpStatusCode || 400).send({
             error: 'UNABLE_TO_LIST_PAYMENTS',
             message: (response && response.error_description || response.data) || message
           })
