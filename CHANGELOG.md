@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.55](https://github.com/ecomclub/app-pagseguro/compare/v0.5.54...v0.5.55) (2020-07-20)
+
+
+### Bug Fixes
+
+* **create-transaction.js:** making post in session on create_transactuon ([f280a94](https://github.com/ecomclub/app-pagseguro/commit/f280a9432a1e227988fc4423def2ff2bac013c8e))
+
 ### [0.5.54](https://github.com/ecomclub/app-pagseguro/compare/v0.5.53...v0.5.54) (2020-07-19)
 
 ### [0.5.53](https://github.com/ecomclub/app-pagseguro/compare/v0.5.51...v0.5.53) (2020-07-19)
