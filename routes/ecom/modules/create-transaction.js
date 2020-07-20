@@ -34,11 +34,11 @@ module.exports = () => {
               installmentOptions = await pgClient({
                 url: '/v2/sessions',
                 authorizationCode,
-                method
+                method: 'post'
               }, true)
                 .then(resp => {
                   const { session } = resp
-                  return pgInstallments(session.id, params.amount.total).then(({ data }) => { data })
+                  return pgInstallments(session.id, params.amount.total).then(({ data }) => data)
                 })
             } catch (e) {
               // ignore
@@ -157,7 +157,7 @@ module.exports = () => {
       }, true)
         .then(data => {
           database.saveTransaction(data.transaction.code, data.transaction.status, storeId)
-          
+
           let response
           switch (params.payment_method.code) {
             case 'credit_card':
@@ -245,7 +245,6 @@ module.exports = () => {
         return doPayment(pgAuth)
       })
       .catch(err => {
-        console.log(err)
         let message = err.message
         if (err.name === 'AuthNotFound') {
           return res.status(400).send({
@@ -296,7 +295,7 @@ module.exports = () => {
           // debug axios request error stack
           err.storeId = storeId
           err.orderNumber = params.order_number
-          return logger.error(err)
+          // return logger.error(err)
         }
       })
   }
