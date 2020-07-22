@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.56](https://github.com/ecomclub/app-pagseguro/compare/v0.5.55...v0.5.56) (2020-07-22)
+
+
+### Bug Fixes
+
+* **list-payments.js:** using installments_options configured in the application ([2cb54d1](https://github.com/ecomclub/app-pagseguro/commit/2cb54d1906069d6d286b5f3c1fb8d620bb8f134e))
+
 ### [0.5.55](https://github.com/ecomclub/app-pagseguro/compare/v0.5.54...v0.5.55) (2020-07-20)
 
 
