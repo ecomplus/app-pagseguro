@@ -47,6 +47,8 @@ module.exports = () => {
         }
       }
 
+      const installmentsOption = config.installments_option
+
       // credit_card
       if (!config.credit_card || !config.credit_card.disabled) {
         const creditCard = {
@@ -76,14 +78,21 @@ module.exports = () => {
 
         if (installmentOptions && installmentOptions.installments && installmentOptions.installments.visa) {
           const { visa } = installmentOptions.installments
-          creditCard.installment_options = visa
+          visa
             .filter(installment => installment.quantity > 1)
-            .map(installment => {
-              return {
+            .forEach(installment => {
+              if (installmentsOption &&
+                (installmentsOption.max_number < installment.quantity ||
+                  installmentsOption.min_installment &&
+                  installmentsOption.min_installment > Math.abs(installment.installmentAmount))) {
+                return
+              }
+
+              creditCard.installment_options.push({
                 number: installment.quantity,
                 tax: (!installment.interestFree),
                 value: Math.abs(installment.installmentAmount)
-              }
+              })
             })
         }
 
@@ -145,7 +154,6 @@ module.exports = () => {
         delete response.discount_option
       }
 
-      const installmentsOption = config.installments_option
       if (installmentsOption && installmentsOption.max_number) {
         response.installments_option = installmentsOption
       } else {
