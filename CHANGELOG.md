@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.57](https://github.com/ecomclub/app-pagseguro/compare/v0.5.56...v0.5.57) (2020-07-27)
+
+
+### Bug Fixes
+
+* **transactions-updater:** setup interval to call function again ([2ff00da](https://github.com/ecomclub/app-pagseguro/commit/2ff00da8524e96d2c894b182e06b93cb675a7fd1))
+
 ### [0.5.56](https://github.com/ecomclub/app-pagseguro/compare/v0.5.55...v0.5.56) (2020-07-22)
 
 
