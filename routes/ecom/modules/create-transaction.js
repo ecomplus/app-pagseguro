@@ -191,7 +191,7 @@ module.exports = () => {
                 }
               }
               break
-            case 'banking_billet':
+            case 'online_debit':
               response = {
                 'redirect_to_payment': false,
                 'transaction': {
@@ -200,7 +200,7 @@ module.exports = () => {
                 }
               }
               break
-            case 'online_debit':
+            case 'banking_billet':
               response = {
                 'redirect_to_payment': false,
                 'transaction': {
