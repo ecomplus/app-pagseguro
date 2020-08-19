@@ -196,7 +196,21 @@ module.exports = () => {
                 'redirect_to_payment': false,
                 'transaction': {
                   'amount': Number(data.transaction.grossAmount),
-                  'payment_link': data.transaction.paymentLink
+                  'payment_link': data.transaction.paymentLink,
+                  'currency_id': 'BRL',
+                  'intermediator': {
+                    'payment_method': {
+                      'code': 'online_debit',
+                      'name': 'Débito Online'
+                    },
+                    'transaction_id': data.transaction.code,
+                    'transaction_code': data.transaction.code,
+                    'transaction_reference': data.transaction.reference
+                  },
+                  'payment_link': data.transaction.paymentLink,
+                  'status': {
+                    'current': paymentStatus(data.transaction.status)
+                  }
                 }
               }
               break
