@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.59](https://github.com/ecomclub/app-pagseguro/compare/v0.5.58...v0.5.59) (2020-08-19)
+
+
+### Bug Fixes
+
+* **create-transaction.js:** returning intermediator obj for payment with online_debit ([67a2f1a](https://github.com/ecomclub/app-pagseguro/commit/67a2f1a231856b4698c0d5096e48112d20b5f72d))
+
 ### [0.5.58](https://github.com/ecomclub/app-pagseguro/compare/v0.5.57...v0.5.58) (2020-08-19)
 
 
