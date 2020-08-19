@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.58](https://github.com/ecomclub/app-pagseguro/compare/v0.5.57...v0.5.58) (2020-08-19)
+
+
+### Bug Fixes
+
+* **create-transaction.js:** returning intermediator obj for payment with baking_billet ([9efe080](https://github.com/ecomclub/app-pagseguro/commit/9efe080b5ebe3bbe9d98d81b1b5340adddcf7d0c))
+
 ### [0.5.57](https://github.com/ecomclub/app-pagseguro/compare/v0.5.56...v0.5.57) (2020-07-27)
 
 
