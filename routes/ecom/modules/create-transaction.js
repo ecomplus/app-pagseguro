@@ -309,7 +309,7 @@ module.exports = () => {
           // debug axios request error stack
           err.storeId = storeId
           err.orderNumber = params.order_number
-          // return logger.error(err)
+          return logger.error(err)
         }
       })
   }
