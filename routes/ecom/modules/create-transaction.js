@@ -298,12 +298,12 @@ module.exports = () => {
               }
 
               err.pagseguroErrorJSON = error
-              res.status(400).send({
-                error: 'CREATE_TRANSACTION_ERR',
-                message,
-                errors
-              })
             }
+
+            res.status(400).send({
+              error: 'CREATE_TRANSACTION_ERR',
+              message
+            })
           }
 
           // debug axios request error stack
