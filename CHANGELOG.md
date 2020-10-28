@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.60](https://github.com/ecomclub/app-pagseguro/compare/v0.5.59...v0.5.60) (2020-10-28)
+
 ### [0.5.59](https://github.com/ecomclub/app-pagseguro/compare/v0.5.58...v0.5.59) (2020-08-19)
 
 
