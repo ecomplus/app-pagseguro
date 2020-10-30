@@ -154,164 +154,163 @@ module.exports = () => {
         method: 'post',
         data: xml,
         authorizationCode
-      }, true)
-        .then(data => {
-          database.saveTransaction(data.transaction.code, data.transaction.status, storeId)
+      }, true).then(({ transaction }) => {
+        database.saveTransaction(transaction.code, transaction.status, storeId)
 
-          let response
-          switch (params.payment_method.code) {
-            case 'credit_card':
-              response = {
-                'redirect_to_payment': false,
-                'transaction': {
-                  'amount': Number(data.transaction.grossAmount),
-                  'creditor_fees': {
-                    'installment': Number(data.transaction.installmentCount),
-                    'intermediation': Number(data.transaction.feeAmount)
+        let response
+        switch (params.payment_method.code) {
+          case 'credit_card':
+            response = {
+              'redirect_to_payment': false,
+              'transaction': {
+                'amount': Number(transaction.grossAmount),
+                'creditor_fees': {
+                  'installment': Number(transaction.installmentCount),
+                  'intermediation': Number(transaction.feeAmount)
+                },
+                'currency_id': 'BRL',
+                'installments': {
+                  'number': Number(transaction.installmentCount),
+                  'tax': installmentsValue.tax,
+                  'total': installmentsValue.total,
+                  'value': installmentsValue.value
+                },
+                'intermediator': {
+                  'payment_method': {
+                    'code': 'credit_card',
+                    'name': 'Cartão de Crédito'
                   },
-                  'currency_id': 'BRL',
-                  'installments': {
-                    'number': Number(data.transaction.installmentCount),
-                    'tax': installmentsValue.tax,
-                    'total': installmentsValue.total,
-                    'value': installmentsValue.value
-                  },
-                  'intermediator': {
-                    'payment_method': {
-                      'code': 'credit_card',
-                      'name': 'Cartão de Crédito'
-                    },
-                    'transaction_id': data.transaction.code,
-                    'transaction_code': data.transaction.code,
-                    'transaction_reference': data.transaction.reference
-                  },
-                  'status': {
-                    'current': paymentStatus(data.transaction.status)
-                  }
+                  'transaction_id': transaction.code,
+                  'transaction_code': transaction.code,
+                  'transaction_reference': String(transaction.reference)
+                },
+                'status': {
+                  'current': paymentStatus(transaction.status)
                 }
               }
-              break
-            case 'online_debit':
-              response = {
-                'redirect_to_payment': false,
-                'transaction': {
-                  'amount': Number(data.transaction.grossAmount),
-                  'payment_link': data.transaction.paymentLink,
-                  'currency_id': 'BRL',
-                  'intermediator': {
-                    'payment_method': {
-                      'code': 'online_debit',
-                      'name': 'Débito Online'
-                    },
-                    'transaction_id': data.transaction.code,
-                    'transaction_code': data.transaction.code,
-                    'transaction_reference': data.transaction.reference
+            }
+            break
+          case 'online_debit':
+            response = {
+              'redirect_to_payment': false,
+              'transaction': {
+                'amount': Number(transaction.grossAmount),
+                'payment_link': transaction.paymentLink,
+                'currency_id': 'BRL',
+                'intermediator': {
+                  'payment_method': {
+                    'code': 'online_debit',
+                    'name': 'Débito Online'
                   },
-                  'payment_link': data.transaction.paymentLink,
-                  'status': {
-                    'current': paymentStatus(data.transaction.status)
-                  }
+                  'transaction_id': transaction.code,
+                  'transaction_code': transaction.code,
+                  'transaction_reference': String(transaction.reference)
+                },
+                'payment_link': transaction.paymentLink,
+                'status': {
+                  'current': paymentStatus(transaction.status)
                 }
               }
-              break
-            case 'banking_billet':
-              response = {
-                'redirect_to_payment': false,
-                'transaction': {
-                  'amount': Number(data.transaction.grossAmount),
-                  'banking_billet': {
-                    'link': data.transaction.paymentLink,
+            }
+            break
+          case 'banking_billet':
+            response = {
+              'redirect_to_payment': false,
+              'transaction': {
+                'amount': Number(transaction.grossAmount),
+                'banking_billet': {
+                  'link': transaction.paymentLink,
+                },
+                'creditor_fees': {
+                  'installment': parseInt(transaction.installmentCount),
+                  'intermediation': Number(transaction.grossAmount)
+                },
+                'currency_id': 'BRL',
+                'installments': {
+                  'number': parseInt(transaction.installmentCount)
+                },
+                'intermediator': {
+                  'payment_method': {
+                    'code': 'banking_billet',
+                    'name': 'Boleto'
                   },
-                  'creditor_fees': {
-                    'installment': parseInt(data.transaction.installmentCount),
-                    'intermediation': Number(data.transaction.grossAmount)
-                  },
-                  'currency_id': 'BRL',
-                  'installments': {
-                    'number': parseInt(data.transaction.installmentCount)
-                  },
-                  'intermediator': {
-                    'payment_method': {
-                      'code': 'banking_billet',
-                      'name': 'Boleto'
-                    },
-                    'transaction_id': data.transaction.code,
-                    'transaction_code': data.transaction.code,
-                    'transaction_reference': data.transaction.reference
-                  },
-                  'payment_link': data.transaction.paymentLink,
-                  'status': {
-                    'current': paymentStatus(data.transaction.status)
-                  }
+                  'transaction_id': transaction.code,
+                  'transaction_code': transaction.code,
+                  'transaction_reference': String(transaction.reference)
+                },
+                'payment_link': transaction.paymentLink,
+                'status': {
+                  'current': paymentStatus(transaction.status)
                 }
               }
-              break
-            default: break
-          }
+            }
+            break
+          default: break
+        }
 
-          return res.send(response)
-        })
+        return res.send(response)
+      })
     }
 
-    database
-      .getPagSeguroAuth(storeId)
-      .then(pgAuth => {
-        return doPayment(pgAuth)
-      })
-      .catch(err => {
-        let message = err.message
-        if (err.name === 'AuthNotFound') {
-          return res.status(400).send({
+    database.getPagSeguroAuth(storeId).then(doPayment).catch(err => {
+      let message = err.message
+      let errorResponse = {}
+      if (typeof err.toJSON === 'function') {
+        errorResponse = err.toJSON()
+      }
+      errorResponse.store_id = storeId
+      errorResponse.order_number = params.order_number
+
+      if (err.name === 'AuthNotFound') {
+        return res.status(400).send({
+          error: 'CREATE_TRANSACTION_PS_ERR',
+          message: 'Authentication not found, please install the application again.'
+        })
+      } else {
+        const { status, headers } = err.response
+        logger.log(`PagSeguro ${status} response for #${storeId} ${params.order_number}`)
+        // treat some PagSeguro response status
+        if (status === 403 || status >= 500) {
+          res.status(status || 403).send({
             error: 'CREATE_TRANSACTION_PS_ERR',
-            message: 'Authentication not found, please install the application again.'
+            message: 'PagSeguro seems to be offline, try again later'
           })
-        } else {
-          const { status, headers } = err.response
-          logger.log(`PagSeguro ${status} response for #${storeId} ${params.order_number}`)
-          // treat some PagSeguro response status
-          if (status === 403 || status >= 500) {
-            res.status(status || 403).send({
-              error: 'CREATE_TRANSACTION_PS_ERR',
-              message: 'PagSeguro seems to be offline, try again later'
-            })
-          } else if (status === 401) {
-            res.status(401).send({
-              error: 'TRANSACTION_PS_AUTH_ERR',
-              message: 'PagSeguro authentication error, please try another playment method'
-            })
-          } else if (status === 400) {
-            if (headers['content-type'] === 'application/xml;charset=ISO-8859-1' &&
-              (err.response && err.response.data) &&
-              typeof err.response.data === 'string') {
-              const error = JSON.parse(xmlToJSON.toJson(err.response.data))
-
-              const { errors } = error
-              if (errors && errors.error) {
-                if (Array.isArray(errors.error)) {
-                  message = ''
-                  errors.error.forEach(e => {
-                    message += `${e.message} | `
-                  })
-                } else {
-                  message = errors.error.message
-                }
+        } else if (status === 401) {
+          res.status(401).send({
+            error: 'TRANSACTION_PS_AUTH_ERR',
+            message: 'PagSeguro authentication error, please try another playment method'
+          })
+        } else if (status === 400) {
+          if (headers['content-type'] === 'application/xml;charset=ISO-8859-1' &&
+            (err.response && err.response.data) &&
+            typeof err.response.data === 'string') {
+            const error = JSON.parse(xmlToJSON.toJson(err.response.data))
+            const { errors } = error
+            if (errors && errors.error) {
+              if (Array.isArray(errors.error)) {
+                message = ''
+                errors.error.forEach(e => {
+                  message += `${e.message} | `
+                })
+              } else {
+                message = errors.error.message
               }
-
-              err.pagseguroErrorJSON = error
             }
 
-            res.status(400).send({
-              error: 'CREATE_TRANSACTION_ERR',
-              message
-            })
+            errorResponse.message = message
+            errorResponse.data = error
           }
 
-          // debug axios request error stack
-          err.storeId = storeId
-          err.orderNumber = params.order_number
-          return logger.error(err)
+          res.status(400).send({
+            error: 'CREATE_TRANSACTION_ERR',
+            message
+          })
         }
-      })
+
+        logger.error(JSON.stringify(errorResponse, undefined, 2))
+        return false
+      }
+    })
   }
 }
 
