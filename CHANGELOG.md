@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.61](https://github.com/ecomclub/app-pagseguro/compare/v0.5.60...v0.5.61) (2020-10-30)
+
+
+### Bug Fixes
+
+* **create-transactions:** returning error for status 400 [#14](https://github.com/ecomclub/app-pagseguro/issues/14) ([e0fd7c7](https://github.com/ecomclub/app-pagseguro/commit/e0fd7c7d6284cf0af64c3232f3e7ec5ad8ed0112))
+* **new-transaction:** ignoring gift product and respecting maxLength ([452f0ed](https://github.com/ecomclub/app-pagseguro/commit/452f0ed7673895d34826e39e30a63f0f2436ffc4))
+
 ### [0.5.60](https://github.com/ecomclub/app-pagseguro/compare/v0.5.59...v0.5.60) (2020-10-28)
 
 ### [0.5.59](https://github.com/ecomclub/app-pagseguro/compare/v0.5.58...v0.5.59) (2020-08-19)
