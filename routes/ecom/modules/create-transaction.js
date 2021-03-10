@@ -110,10 +110,10 @@ module.exports = () => {
                 }
               },
               billingAddress: {
-                street: trimString(address.street),
+                street: trimString(address.street).substr(0, 80),
                 number: address.number || 'SN',
-                district: address.borough || '',
-                city: address.city,
+                district: (address.borough || '').substr(0, 60),
+                city: address.city ? address.city.substr(0, 60) : undefined,
                 state: address.province_code,
                 country: 'BRA',
                 postalCode: address.zip
