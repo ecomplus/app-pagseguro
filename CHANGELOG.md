@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.62](https://github.com/ecomplus/app-pagseguro/compare/v0.5.61...v0.5.62) (2021-03-10)
+
+
+### Bug Fixes
+
+* **create-transaction:** prevent errors with address chars lenght limits ([a74a16c](https://github.com/ecomplus/app-pagseguro/commit/a74a16ce2d9e87a0a5c0dc9bee4238a1e059dd37))
+
 ### [0.5.61](https://github.com/ecomclub/app-pagseguro/compare/v0.5.60...v0.5.61) (2020-10-30)
 
 
