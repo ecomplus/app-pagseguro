@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.63](https://github.com/ecomplus/app-pagseguro/compare/v0.5.62...v0.5.63) (2021-10-21)
+
+
+### Bug Fixes
+
+* **deps:** update @ecomplus/application-sdk to v1.15.5 sqlite ([687b1bc](https://github.com/ecomplus/app-pagseguro/commit/687b1bc526b5a77b04b5d3c6a19dca5177f48b45))
+
 ### [0.5.62](https://github.com/ecomplus/app-pagseguro/compare/v0.5.61...v0.5.62) (2021-03-10)
 
 
