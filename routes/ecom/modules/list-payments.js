@@ -130,6 +130,20 @@ module.exports = () => {
         response.payment_gateways.push(bankingBillet)
       }
 
+      // payment_link
+      if (config.payment_link && config.payment_link.enable) {
+        const paymentLink = {
+          ...newPaymentGateway(),
+          payment_method: {
+            code: 'balance_on_intermediary',
+            name: 'Link de pagamento'
+          },
+          label: 'Link de pagamento'
+        }
+
+        response.payment_gateways.push(paymentLink)
+      }
+
       // online_debit
       if (!config.online_debit || !config.online_debit.disabled) {
         const onlineDebit = {

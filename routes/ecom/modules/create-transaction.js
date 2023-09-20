@@ -16,8 +16,10 @@ module.exports = () => {
     const doPayment = async (pgAuth) => {
       const authorizationCode = pgAuth.authorization_code
       const transaction = newTransaction(params)
+      const isPaymentLink = params.payment_method && params.payment_method.code === 'balance_on_intermediary'
       let payment
       let installmentsValue
+      let transactionLink
       // choice payment method
       switch (params.payment_method.code) {
         // mount data for payment with credit card
@@ -133,6 +135,24 @@ module.exports = () => {
             ...transaction
           }
           break
+        
+        case 'balance_on_intermediary':
+          transactionLink = {
+            intermediator: {
+              payment_method: params.payment_method
+            },
+            currency_id: params.currency_id,
+            currency_symbol: params.currency_symbol,
+            amount: params.amount.total,
+            status: {
+              current: 'pending'
+            }
+          }
+          payment = {
+            ...transaction,
+            redirectURL: `https://${params.domain}/app/#/order/${params.order_number}/${params.order_id}`
+          }
+            break  
         case 'online_debit':
           payment = {
             mode: 'default',
@@ -150,11 +170,12 @@ module.exports = () => {
       xml += jstoXML({ payment })
 
       return pgClient({
-        url: '/v2/transactions',
+        url: isPaymentLink ? '/v2/checkout' : '/v2/transactions',
         method: 'post',
         data: xml,
         authorizationCode
-      }, true).then(({ transaction }) => {
+      }, true).then((result) => {
+        const { transaction } = result
         database.saveTransaction(transaction.code, transaction.status, storeId)
 
         let response
@@ -213,6 +234,7 @@ module.exports = () => {
               }
             }
             break
+
           case 'banking_billet':
             response = {
               'redirect_to_payment': false,
@@ -246,6 +268,14 @@ module.exports = () => {
             }
             break
           default: break
+        }
+
+        if (isPaymentLink && transactionLink) {
+          transactionLink.payment_link = `https://pagseguro.uol.com.br/v2/checkout/payment.html?code=${result.checkout && result.checkout.code}`
+          res.send({
+            redirect_to_payment: true,
+            transaction: transactionLink
+          })
         }
 
         return res.send(response)

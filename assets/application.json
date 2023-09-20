@@ -136,6 +136,21 @@
       },
       "hide": false
     },
+    "payment_link": {
+      "schema": {
+        "type": "object",
+        "title": "Link de pagamento",
+        "description": "Configurações para pagamento com Link de pagamento",
+        "properties": {
+          "enable": {
+            "type": "boolean",
+            "title": "Ativar opção de pagamento",
+            "default": false
+          }
+        }
+      },
+      "hide": false
+    },
     "discount": {
       "schema": {
         "type": "object",
