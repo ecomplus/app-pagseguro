@@ -272,7 +272,7 @@ module.exports = () => {
 
         if (isPaymentLink && transactionLink) {
           transactionLink.payment_link = `https://pagseguro.uol.com.br/v2/checkout/payment.html?code=${result.checkout && result.checkout.code}`
-          res.send({
+          return res.send({
             redirect_to_payment: true,
             transaction: transactionLink
           })
