@@ -152,7 +152,7 @@ module.exports = () => {
             ...transaction,
             redirectURL: `https://${params.domain}/app/#/order/${params.order_number}/${params.order_id}`
           }
-            break  
+          break
         case 'online_debit':
           payment = {
             mode: 'default',
