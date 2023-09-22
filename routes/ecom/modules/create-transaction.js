@@ -176,7 +176,9 @@ module.exports = () => {
         authorizationCode
       }, true).then((result) => {
         const { transaction } = result
-        database.saveTransaction(transaction.code, transaction.status, storeId)
+        if (transaction) {
+          database.saveTransaction(transaction.code, transaction.status, storeId)
+        }
 
         let response
         switch (params.payment_method.code) {
