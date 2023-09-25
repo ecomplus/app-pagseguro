@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.65](https://github.com/ecomplus/app-pagseguro/compare/v0.5.64...v0.5.65) (2023-09-25)
+
+
+### Features
+
+* add config option to enable pagseguro checkout redirect ([#28](https://github.com/ecomplus/app-pagseguro/issues/28)) ([a26d930](https://github.com/ecomplus/app-pagseguro/commit/a26d9301ec91758ec98d08f0786056db5e6f8b6d))
+
 ### [0.5.64](https://github.com/ecomplus/app-pagseguro/compare/v0.5.62...v0.5.64) (2021-10-21)
 
 
