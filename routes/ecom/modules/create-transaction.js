@@ -15,23 +15,21 @@ module.exports = () => {
 
     const doPayment = async (pgAuth) => {
       const authorizationCode = pgAuth.authorization_code
-      const transaction = newTransaction(params)
       const isPaymentLink = params.payment_method && params.payment_method.code === 'balance_on_intermediary'
+      const transaction = newTransaction(params, isPaymentLink)
       let payment
       let installmentsValue
       let transactionLink
-      // choice payment method
+      const address = params.to || params.billing_address
+      const cardHashes = params.credit_card.hash.split(' // ')
+      const installmentsNumber = params.installments_number
+      const amountTotal = parseInt(params.amount.total * 1000, 10) / 1000
+
       switch (params.payment_method.code) {
         // mount data for payment with credit card
         case 'credit_card':
-          const address = params.to || params.billing_address
-          const hashs = params.credit_card.hash.split(' // ')
-          const installmentsNumber = params.installments_number
-          const amountTotal = parseInt(params.amount.total * 1000, 10) / 1000
-
           if (installmentsNumber > 1) {
             let installmentOptions
-
             try {
               installmentOptions = await pgClient({
                 url: '/v2/sessions',
@@ -45,16 +43,15 @@ module.exports = () => {
             } catch (e) {
               // ignore
             }
-
             let installment
             if (installmentOptions) {
               installment = installmentOptions.installments.visa
                 .find(option => option.quantity === installmentsNumber)
             }
             if (!installment) {
-              if (hashs[2]) {
+              if (cardHashes[2]) {
                 try {
-                  installment = JSON.parse(hashs[2])
+                  installment = JSON.parse(cardHashes[2])
                     .find(option => option.quantity === installmentsNumber)
                 } catch (e) {
                   // ignore invalid json
@@ -70,7 +67,6 @@ module.exports = () => {
               }
             }
           }
-
           if (!installmentsValue || !installmentsValue.value) {
             // default installments interest free
             installmentsValue = {
@@ -79,13 +75,12 @@ module.exports = () => {
               tax: false
             }
           }
-
           payment = {
             ...transaction,
             mode: 'default',
             method: 'creditCard',
             creditCard: {
-              token: hashs[1],
+              token: cardHashes[1],
               installment: {
                 quantity: params.installments_number,
                 value: parseFloat(
@@ -122,12 +117,11 @@ module.exports = () => {
               }
             }
           }
-
-          if (payment.sender && hashs[0]) {
-            payment.sender.hash = hashs[0]
+          if (payment.sender && cardHashes[0]) {
+            payment.sender.hash = cardHashes[0]
           }
-
           break
+
         case 'banking_billet':
           payment = {
             mode: 'default',
@@ -135,7 +129,7 @@ module.exports = () => {
             ...transaction
           }
           break
-        
+
         case 'balance_on_intermediary':
           transactionLink = {
             intermediator: {
@@ -153,6 +147,7 @@ module.exports = () => {
             redirectURL: `https://${params.domain}/app/#/order/${params.order_number}/${params.order_id}`
           }
           break
+
         case 'online_debit':
           payment = {
             mode: 'default',
@@ -163,7 +158,6 @@ module.exports = () => {
             ...transaction
           }
           break
-        default: break
       }
 
       let xml = '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>'
@@ -184,54 +178,54 @@ module.exports = () => {
         switch (params.payment_method.code) {
           case 'credit_card':
             response = {
-              'redirect_to_payment': false,
-              'transaction': {
-                'amount': Number(transaction.grossAmount),
-                'creditor_fees': {
-                  'installment': Number(transaction.installmentCount),
-                  'intermediation': Number(transaction.feeAmount)
+              redirect_to_payment: false,
+              transaction: {
+                amount: Number(transaction.grossAmount),
+                creditor_fees: {
+                  installment: Number(transaction.installmentCount),
+                  intermediation: Number(transaction.feeAmount)
                 },
-                'currency_id': 'BRL',
-                'installments': {
-                  'number': Number(transaction.installmentCount),
-                  'tax': installmentsValue.tax,
-                  'total': installmentsValue.total,
-                  'value': installmentsValue.value
+                currency_id: 'BRL',
+                installments: {
+                  number: Number(transaction.installmentCount),
+                  tax: installmentsValue.tax,
+                  total: installmentsValue.total,
+                  value: installmentsValue.value
                 },
-                'intermediator': {
-                  'payment_method': {
-                    'code': 'credit_card',
-                    'name': 'Cartão de Crédito'
+                intermediator: {
+                  payment_method: {
+                    code: 'credit_card',
+                    name: 'Cartão de Crédito'
                   },
-                  'transaction_id': transaction.code,
-                  'transaction_code': transaction.code,
-                  'transaction_reference': String(transaction.reference)
+                  transaction_id: transaction.code,
+                  transaction_code: transaction.code,
+                  transaction_reference: String(transaction.reference)
                 },
-                'status': {
-                  'current': paymentStatus(transaction.status)
+                status: {
+                  current: paymentStatus(transaction.status)
                 }
               }
             }
             break
+
           case 'online_debit':
             response = {
-              'redirect_to_payment': false,
-              'transaction': {
-                'amount': Number(transaction.grossAmount),
-                'payment_link': transaction.paymentLink,
-                'currency_id': 'BRL',
-                'intermediator': {
-                  'payment_method': {
-                    'code': 'online_debit',
-                    'name': 'Débito Online'
+              redirect_to_payment: false,
+              transaction: {
+                amount: Number(transaction.grossAmount),
+                payment_link: transaction.paymentLink,
+                currency_id: 'BRL',
+                intermediator: {
+                  payment_method: {
+                    code: 'online_debit',
+                    name: 'Débito Online'
                   },
-                  'transaction_id': transaction.code,
-                  'transaction_code': transaction.code,
-                  'transaction_reference': String(transaction.reference)
+                  transaction_id: transaction.code,
+                  transaction_code: transaction.code,
+                  transaction_reference: String(transaction.reference)
                 },
-                'payment_link': transaction.paymentLink,
-                'status': {
-                  'current': paymentStatus(transaction.status)
+                status: {
+                  current: paymentStatus(transaction.status)
                 }
               }
             }
@@ -239,37 +233,36 @@ module.exports = () => {
 
           case 'banking_billet':
             response = {
-              'redirect_to_payment': false,
-              'transaction': {
-                'amount': Number(transaction.grossAmount),
-                'banking_billet': {
-                  'link': transaction.paymentLink,
+              redirect_to_payment: false,
+              transaction: {
+                amount: Number(transaction.grossAmount),
+                banking_billet: {
+                  link: transaction.paymentLink
                 },
-                'creditor_fees': {
-                  'installment': parseInt(transaction.installmentCount),
-                  'intermediation': Number(transaction.grossAmount)
+                creditor_fees: {
+                  installment: parseInt(transaction.installmentCount),
+                  intermediation: Number(transaction.grossAmount)
                 },
-                'currency_id': 'BRL',
-                'installments': {
-                  'number': parseInt(transaction.installmentCount)
+                currency_id: 'BRL',
+                installments: {
+                  number: parseInt(transaction.installmentCount)
                 },
-                'intermediator': {
-                  'payment_method': {
-                    'code': 'banking_billet',
-                    'name': 'Boleto'
+                intermediator: {
+                  payment_method: {
+                    code: 'banking_billet',
+                    name: 'Boleto'
                   },
-                  'transaction_id': transaction.code,
-                  'transaction_code': transaction.code,
-                  'transaction_reference': String(transaction.reference)
+                  transaction_id: transaction.code,
+                  transaction_code: transaction.code,
+                  transaction_reference: String(transaction.reference)
                 },
-                'payment_link': transaction.paymentLink,
-                'status': {
-                  'current': paymentStatus(transaction.status)
+                payment_link: transaction.paymentLink,
+                status: {
+                  current: paymentStatus(transaction.status)
                 }
               }
             }
             break
-          default: break
         }
 
         if (isPaymentLink && transactionLink) {
