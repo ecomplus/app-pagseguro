@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.66](https://github.com/ecomplus/app-pagseguro/compare/v0.5.65...v0.5.66) (2025-08-01)
+
+
+### Bug Fixes
+
+* removing wrong (checkout link) params on transparent transaction creation ([bda97f8](https://github.com/ecomplus/app-pagseguro/commit/bda97f84ee79e9bcf4909de6f64b98a9ce308750))
+
 ### [0.5.65](https://github.com/ecomplus/app-pagseguro/compare/v0.5.64...v0.5.65) (2023-09-25)
 
 
