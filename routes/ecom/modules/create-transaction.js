@@ -20,8 +20,8 @@ module.exports = () => {
       let payment
       let installmentsValue
       let transactionLink
-      const address = params.to || params.billing_address
-      const cardHashes = params.credit_card.hash.split(' // ')
+      const billingAddress = params.billing_address || params.to
+      const cardHashes = params.credit_card && params.credit_card.hash.split(' // ')
       const installmentsNumber = params.installments_number
       const amountTotal = parseInt(params.amount.total * 1000, 10) / 1000
 
@@ -90,30 +90,24 @@ module.exports = () => {
               },
               holder: {
                 name: params.credit_card.holder_name,
-                documents: {
-                  document: {
-                    type: params.buyer.registry_type === 'p' ? 'CPF' : 'CNPJ',
-                    value: params.buyer.doc_number
-                  }
-                },
-                birthDate: convertDate(
-                  params.buyer.birth_date.day,
-                  params.buyer.birth_date.month,
-                  params.buyer.birth_date.year
-                ),
-                phone: {
-                  areaCode: params.buyer.phone.number.substr(0, 2),
-                  number: params.buyer.phone.number.substr(2, params.buyer.phone.number)
-                }
+                documents: transaction.sender.documents,
+                birthDate: params.buyer.birth_date
+                  ? convertDate(
+                    params.buyer.birth_date.day,
+                    params.buyer.birth_date.month,
+                    params.buyer.birth_date.year
+                  )
+                  : undefined,
+                phone: transaction.sender.phone
               },
               billingAddress: {
-                street: trimString(address.street).substr(0, 80),
-                number: address.number || 'SN',
-                district: (address.borough || '').substr(0, 60),
-                city: address.city ? address.city.substr(0, 60) : undefined,
-                state: address.province_code,
+                street: String(trimString(billingAddress.street)).substr(0, 80),
+                number: String(billingAddress.number || 'SN'),
+                district: String(billingAddress.borough || '').substr(0, 60),
+                city: String(billingAddress.city).substr(0, 60),
+                state: String(billingAddress.province_code).substr(0, 2),
                 country: 'BRA',
-                postalCode: address.zip
+                postalCode: String(billingAddress.zip).replace(/\D/g, '').substr(0, 8)
               }
             }
           }
