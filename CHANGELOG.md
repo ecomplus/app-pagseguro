@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.68](https://github.com/ecomplus/app-pagseguro/compare/v0.5.67...v0.5.68) (2025-08-02)
+
+
+### Bug Fixes
+
+* fixed xml data for payment link (external checkout) creation ([6225bab](https://github.com/ecomplus/app-pagseguro/commit/6225bab7b62b4c7322247d995033ab5bddede50e))
+
 ### [0.5.67](https://github.com/ecomplus/app-pagseguro/compare/v0.5.66...v0.5.67) (2025-08-02)
 
 
