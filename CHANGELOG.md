@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.67](https://github.com/ecomplus/app-pagseguro/compare/v0.5.66...v0.5.67) (2025-08-02)
+
+
+### Bug Fixes
+
+* prevent fatal error with undefined card params ([d1bcf22](https://github.com/ecomplus/app-pagseguro/commit/d1bcf22898f40361fa99655705221fe3d74110e1))
+
 ### [0.5.66](https://github.com/ecomplus/app-pagseguro/compare/v0.5.65...v0.5.66) (2025-08-01)
 
 
