@@ -29,12 +29,12 @@ module.exports = () => {
             label: config.discount_option_label,
             value
           }
-            // specify the discount type and min amount is optional
-            ;['type', 'min_amount'].forEach(prop => {
-              if (discount[prop]) {
-                response.discount_option[prop] = discount[prop]
-              }
-            })
+          // specify the discount type and min amount is optional
+          ;['type', 'min_amount'].forEach(prop => {
+            if (discount[prop]) {
+              response.discount_option[prop] = discount[prop]
+            }
+          })
         }
       }
 
@@ -72,7 +72,6 @@ module.exports = () => {
             onload_expression: onloadFunction,
             script_uri: `https://pagseguro.ecomplus.biz/pagseguro-dp${sandbox}.js`
           },
-          icon: 'https://e-com.club/mass/ftp/others/pagseguro_credito.png',
           card_companies: config.card_companies
         }
 
@@ -153,7 +152,6 @@ module.exports = () => {
             name: 'Débito Online'
           },
           label: 'Débito Online',
-          icon: 'https://e-com.club/mass/ftp/others/pagseguro_debito.png',
           js_client: {
             transaction_promise: '_senderHash',
             fallback_script_uri: `https://pagseguro.ecomplus.biz/fallback-pagseguro-dp${sandbox}.js`,
