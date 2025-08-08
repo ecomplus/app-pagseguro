@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.69](https://github.com/ecomplus/app-pagseguro/compare/v0.5.68...v0.5.69) (2025-08-08)
+
+
+### Bug Fixes
+
+* set `shippingAddressRequired` true for checkout payment link ([bae24b1](https://github.com/ecomplus/app-pagseguro/commit/bae24b1c1af872df8d4877b3a7df467dd19fb309))
+
 ### [0.5.68](https://github.com/ecomplus/app-pagseguro/compare/v0.5.67...v0.5.68) (2025-08-02)
 
 

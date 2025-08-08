@@ -1,7 +1,7 @@
 {
   "name": "pagseguro",
   "private": true,
-  "version": "0.5.68",
+  "version": "0.5.69",
   "description": "Pagseguro for E-Com Plus",
   "main": "main.js",
   "scripts": {
